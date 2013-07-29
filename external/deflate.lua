@@ -1,23 +1,127 @@
--- dmlib.deflate
--- deflate (and gunzip) implemented in Lua.
---
--- Note: only supports decompression.
--- Compression not implemented.
---
--- References
--- [1] DEFLATE Compressed Data Format Specification version 1.3
---     http://tools.ietf.org/html/rfc1951
--- [2] GZIP file format specification version 4.3
---     http://tools.ietf.org/html/rfc1952
--- [3] http://en.wikipedia.org/wiki/DEFLATE
--- [4] pyflate, by Paul Sladen
---     http://www.paul.sladen.org/projects/pyflate/
--- [5] Compress::Zlib::Perl - partial pure Perl implementation of
---     Compress::Zlib
---     http://search.cpan.org/~nwclark/Compress-Zlib-Perl/Perl.pm
---
--- (c) 2008 David Manura.  Licensed under the same terms as Lua (MIT).
+--[[
 
+LUA MODULE
+
+  compress.deflatelua - deflate (and gunzip/zlib) implemented in Lua.
+
+SYNOPSIS
+  
+  local DEFLATE = require 'compress.deflatelua'
+  -- uncompress gzip file
+  local fh = assert(io.open'foo.txt.gz', 'rb')
+  local ofh = assert(io.open'foo.txt', 'wb')
+  DEFLATE.gunzip {input=fh, output=ofh}
+  fh:close(); ofh:close()
+  -- can also uncompress from string including zlib and raw DEFLATE formats.
+  
+DESCRIPTION
+  
+  This is a pure Lua implementation of decompressing the DEFLATE format,
+  including the related zlib and gzip formats.
+  
+  Note: This library only supports decompression.
+  Compression is not currently implemented.
+
+API
+
+  Note: in the following functions, input stream `fh` may be
+  a file handle, string, or an iterator function that returns strings.
+  Output stream `ofh` may be a file handle or a function that
+  consumes one byte (number 0..255) per call.
+
+  DEFLATE.inflate {input=fh, output=ofh}
+
+    Decompresses input stream `fh` in the DEFLATE format
+    while writing to output stream `ofh`.
+    DEFLATE is detailed in http://tools.ietf.org/html/rfc1951 .
+  
+  DEFLATE.gunzip {input=fh, output=ofh, disable_crc=disable_crc}
+  
+    Decompresses input stream `fh` with the gzip format
+    while writing to output stream `ofh`.
+    `disable_crc` (defaults to `false`) will disable CRC-32 checking
+    to increase speed.
+    gzip is detailed in http://tools.ietf.org/html/rfc1952 .
+
+  DEFLATE.inflate_zlib {input=fh, output=ofh, disable_crc=disable_crc}
+  
+    Decompresses input stream `fh` with the zlib format
+    while writing to output stream `ofh`.
+    `disable_crc` (defaults to `false`) will disable CRC-32 checking
+    to increase speed.
+    zlib is detailed in http://tools.ietf.org/html/rfc1950 .  
+
+  DEFLATE.adler32(byte, crc) --> rcrc
+  
+    Returns adler32 checksum of byte `byte` (number 0..255) appended
+    to string with adler32 checksum `crc`.  This is internally used by
+    `inflate_zlib`.
+    ADLER32 in detailed in http://tools.ietf.org/html/rfc1950 .
+
+COMMAND LINE UTILITY
+
+  A `gunziplua` command line utility (in folder `bin`) is also provided.
+  This mimicks the *nix `gunzip` utility but is a pure Lua implementation
+  that invokes this library.  For help do
+  
+    gunziplua -h
+    
+DEPENDENCIES
+
+  Requires 'digest.crc32lua' (used for optional CRC-32 checksum checks).
+    https://github.com/davidm/lua-digest-crc32lua
+
+  Will use a bit library ('bit', 'bit32', 'bit.numberlua') if available.  This
+  is not that critical for this library but is required by digest.crc32lua.
+
+  'pythonic.optparse' is only required by the optional `gunziplua`
+  command-line utilty for command line parsing.  
+    https://github.com/davidm/lua-pythonic-optparse
+
+INSTALLATION
+
+  Copy the `compress` directory into your LUA_PATH.
+    
+REFERENCES
+
+  [1] DEFLATE Compressed Data Format Specification version 1.3
+      http://tools.ietf.org/html/rfc1951
+  [2] GZIP file format specification version 4.3
+      http://tools.ietf.org/html/rfc1952
+  [3] http://en.wikipedia.org/wiki/DEFLATE
+  [4] pyflate, by Paul Sladen
+      http://www.paul.sladen.org/projects/pyflate/
+  [5] Compress::Zlib::Perl - partial pure Perl implementation of
+      Compress::Zlib
+      http://search.cpan.org/~nwclark/Compress-Zlib-Perl/Perl.pm
+
+LICENSE
+
+  (c) 2008-2011 David Manura.  Licensed under the same terms as Lua (MIT).
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+  (end license)
+--]]
+
+local M = {_TYPE='module', _NAME='compress.deflatelua', _VERSION='0.3.20111128'}
+
+local path = (...):match('^.+[%.\\/]') or ''
 local assert = assert
 local error = error
 local ipairs = ipairs
@@ -32,20 +136,39 @@ local math = math
 local table_sort = table.sort
 local math_max = math.max
 local string_char = string.char
-local io_open = io.open
-local _G = _G
 
-local crc32 = require( TILED_LOADER_PATH .. "external.crc32lua" ) . crc32_byte
+--[[
+ Requires the first module listed that exists, else raises like `require`.
+ If a non-string is encountered, it is returned.
+ Second return value is module name loaded (or '').
+ --]]
+local function requireany(...)
+  local errs = {}
+  for i = 1, select('#', ...) do local name = select(i, ...)
+    if type(name) ~= 'string' then return name, '' end
+    local ok, mod = pcall(require, name)
+    if ok then return mod, name end
+    errs[#errs+1] = mod
+  end
+  error(table.concat(errs, '\n'), 2)
+end
+
+
+local crc32 = require (path.."crc32lua").crc32_byte
+local bit, name_ = requireany(path..'numberlua')
 
 local DEBUG = false
 
---[[NATIVE_BITOPS
-local band = bit.band
-local lshift = bit.lshift
-local rshift = bit.rshift
---]]
+-- Whether to use `bit` library functions in current module.
+-- Unlike the crc32 library, it doesn't make much difference in this module.
+local NATIVE_BITOPS = (bit ~= nil)
 
-local M = {}
+local band, lshift, rshift
+if NATIVE_BITOPS then
+  band = bit.band
+  lshift = bit.lshift
+  rshift = bit.rshift
+end
 
 
 local function warn(s)
@@ -119,6 +242,7 @@ local is_bitstream = setmetatable({}, {__mode='k'})
 
 -- DEBUG
 -- prints LSB first
+--[[
 local function bits_tostring(bits, nbits)
   local s = ''
   local tmp = bits
@@ -135,7 +259,7 @@ local function bits_tostring(bits, nbits)
 
   return s
 end
-
+--]]
 
 local function bytestream_from_file(fh)
   local o = {}
@@ -179,7 +303,6 @@ local function bytestream_from_function(f)
 end
 
 
-local left
 local function bitstream_from_bytestream(bys)
   local buf_byte = 0
   local buf_nbit = 0
@@ -189,43 +312,44 @@ local function bitstream_from_bytestream(bys)
     return buf_nbit
   end
 
-  function o:read(nbits)
-    nbits = nbits or 1
-    while buf_nbit < nbits do
-      local byte = bys:read()
-      if not byte then return end  -- note: more calls also return nil
-      buf_byte = buf_byte + pow2[buf_nbit] * byte
-      buf_nbit = buf_nbit + 8
+  if NATIVE_BITOPS then
+    function o:read(nbits)
+      nbits = nbits or 1
+      while buf_nbit < nbits do
+        local byte = bys:read()
+        if not byte then return end  -- note: more calls also return nil
+        buf_byte = buf_byte + lshift(byte, buf_nbit)
+        buf_nbit = buf_nbit + 8
+      end
+      local bits
+      if nbits == 0 then
+        bits = 0
+      elseif nbits == 32 then
+        bits = buf_byte
+        buf_byte = 0
+      else
+        bits = band(buf_byte, rshift(0xffffffff, 32 - nbits))
+        buf_byte = rshift(buf_byte, nbits)
+      end
+      buf_nbit = buf_nbit - nbits
+      return bits
     end
-    local m = pow2[nbits]
-    local bits = buf_byte % m
-    buf_byte = (buf_byte - bits) / m
-    buf_nbit = buf_nbit - nbits
-    return bits
+  else
+    function o:read(nbits)
+      nbits = nbits or 1
+      while buf_nbit < nbits do
+        local byte = bys:read()
+        if not byte then return end  -- note: more calls also return nil
+        buf_byte = buf_byte + pow2[buf_nbit] * byte
+        buf_nbit = buf_nbit + 8
+      end
+      local m = pow2[nbits]
+      local bits = buf_byte % m
+      buf_byte = (buf_byte - bits) / m
+      buf_nbit = buf_nbit - nbits
+      return bits
+    end
   end
-  --[[NATIVE_BITOPS
-  function o:read(nbits)
-    nbits = nbits or 1
-    while buf_nbit < nbits do
-      local byte = bys:read()
-      if not byte then return end  -- note: more calls also return nil
-      buf_byte = buf_byte + lshift(byte, buf_nbit)
-      buf_nbit = buf_nbit + 8
-    end
-    local bits
-    if nbits == 0 then
-      bits = 0
-    elseif nbits == 32 then
-      bits = buf_byte
-      buf_byte = 0
-    else
-      bits = band(buf_byte, rshift(0xffffffff, 32 - nbits))
-      buf_byte = rshift(buf_byte, nbits)
-    end
-    buf_nbit = buf_nbit - nbits
-    return bits
-  end
-  --]]
   
   is_bitstream[o] = true
 
@@ -313,7 +437,14 @@ local function HuffmanTable(init, is_full)
 
   -- function t:lookup(bits) return look[bits] end
 
-  local function msb(bits, nbits)
+  local msb = NATIVE_BITOPS and function(bits, nbits)
+    local res = 0
+    for i=1,nbits do
+      res = lshift(res, 1) + band(bits, 1)
+      bits = rshift(bits, 1)
+    end
+    return res
+  end or function(bits, nbits)
     local res = 0
     for i=1,nbits do
       local b = bits % 2
@@ -322,16 +453,6 @@ local function HuffmanTable(init, is_full)
     end
     return res
   end
-  --[[NATIVE_BITOPS
-  local function msb(bits, nbits)
-    local res = 0
-    for i=1,nbits do
-      res = lshift(res, 1) + band(bits, 1)
-      bits = rshift(bits, 1)
-    end
-    return res
-  end
-  --]]
   
   local tfirstcode = memoize(
     function(bits) return pow2[minbits] + msb(bits, minbits) end)
@@ -440,7 +561,6 @@ local function parse_zlib_header(bs)
   if cm ~= 8 then -- not "deflate"
     runtime_error("unrecognized zlib compression method: " + cm)
   end
-  local window_size
   if cinfo > 7 then
     runtime_error("invalid zlib window size: cinfo=" + cinfo)
   end
@@ -452,7 +572,7 @@ local function parse_zlib_header(bs)
   
   if fdict == 1 then
     runtime_error("FIX:TODO - FDICT not currently implemented")
-    local dictid = bs:read(32)
+    local dictid_ = bs:read(32)
   end
   
   return window_size
@@ -542,12 +662,16 @@ local function parse_compressed_item(bs, outstate, littable, disttable)
     end
     if not tdecode_len_nextrabits then
       local t = {}
-      for i=257,285 do
-        local j = math_max(i - 261, 0)
-        t[i] = (j - (j % 4)) / 4
-        --[[NATIVE_BITOPS
-        t[i] = rshift(j, 2)
-        --]]
+      if NATIVE_BITOPS then
+        for i=257,285 do
+          local j = math_max(i - 261, 0)
+          t[i] = rshift(j, 2)
+        end
+      else
+        for i=257,285 do
+          local j = math_max(i - 261, 0)
+          t[i] = (j - (j % 4)) / 4
+        end
       end
       t[285] = 0
       tdecode_len_nextrabits = t
@@ -570,12 +694,16 @@ local function parse_compressed_item(bs, outstate, littable, disttable)
     end
     if not tdecode_dist_nextrabits then
       local t = {}
-      for i=0,29 do
-        local j = math_max(i - 2, 0)
-        t[i] = (j - (j % 2)) / 2
-        --[[NATIVE_BITOPS
-        t[i] = rshift(j, 1)
-        --]]
+      if NATIVE_BITOPS then
+        for i=0,29 do
+          local j = math_max(i - 2, 0)
+          t[i] = rshift(j, 1)
+        end
+      else
+        for i=0,29 do
+          local j = math_max(i - 2, 0)
+          t[i] = (j - (j % 2)) / 2
+        end
       end
       tdecode_dist_nextrabits = t
       --for i=0,29 do debug('T4',i,t[i]) end
@@ -603,7 +731,7 @@ local function parse_block(bs, outstate)
   local BTYPE_NO_COMPRESSION = 0
   local BTYPE_FIXED_HUFFMAN = 1
   local BTYPE_DYNAMIC_HUFFMAN = 2
-  local BTYPE_RESERVED = 3
+  local BTYPE_RESERVED_ = 3
 
   if DEBUG then
     debug('bfinal=', bfinal)
@@ -613,7 +741,7 @@ local function parse_block(bs, outstate)
   if btype == BTYPE_NO_COMPRESSION then
     bs:read(bs:nbits_left_in_byte())
     local len = bs:read(16)
-    local nlen = noeof(bs:read(16))
+    local nlen_ = noeof(bs:read(16))
 
     for i=1,len do
       local by = noeof(bs:read(8))
@@ -640,7 +768,7 @@ local function parse_block(bs, outstate)
 end
 
 
-local function deflate(t)
+function M.inflate(t)
   local bs = get_bitstream(t.input)
   local outbs = get_obytestream(t.output)
   local outstate = make_outstate(outbs)
@@ -649,10 +777,10 @@ local function deflate(t)
     local is_final = parse_block(bs, outstate)
   until is_final
 end
-M.deflate = deflate
+local inflate = M.inflate
 
--- http://tools.ietf.org/html/rfc1952
-local function gunzip(t)
+
+function M.gunzip(t)
   local bs = get_bitstream(t.input)
   local outbs = get_obytestream(t.output)
   local disable_crc = t.disable_crc
@@ -662,7 +790,7 @@ local function gunzip(t)
 
   local data_crc32 = 0
 
-  deflate{input=bs, output=
+  inflate{input=bs, output=
     disable_crc and outbs or
       function(byte)
         data_crc32 = crc32(byte, data_crc32)
@@ -687,11 +815,9 @@ local function gunzip(t)
     warn 'trailing garbage ignored'
   end
 end
-M.gunzip = gunzip
 
--- adler32 checksum
--- see ADLER32 in http://tools.ietf.org/html/rfc1950 .
-local function adler32(byte, crc)
+
+function M.adler32(byte, crc)
   local s1 = crc % 65536
   local s2 = (crc - s1) / 65536
   s1 = (s1 + byte) % 65521
@@ -699,21 +825,21 @@ local function adler32(byte, crc)
   return s2*65536 + s1
 end -- 65521 is the largest prime smaller than 2^16
 
--- http://tools.ietf.org/html/rfc1950
-local function inflate_zlib(t)
+
+function M.inflate_zlib(t)
   local bs = get_bitstream(t.input)
   local outbs = get_obytestream(t.output)
   local disable_crc = t.disable_crc
   if disable_crc == nil then disable_crc = false end
   
-  local window_size = parse_zlib_header(bs)
+  local window_size_ = parse_zlib_header(bs)
   
   local data_adler32 = 1
   
-  deflate{input=bs, output=
+  inflate{input=bs, output=
     disable_crc and outbs or
       function(byte)
-        data_adler32 = adler32(byte, data_adler32)
+        data_adler32 = M.adler32(byte, data_adler32)
         outbs(byte)
       end
   }
@@ -737,32 +863,6 @@ local function inflate_zlib(t)
     warn 'trailing garbage ignored'
   end
 end
-M.inflate_zlib = inflate_zlib
+
 
 return M
-
---[[
-LICENSE
-
-Copyright (C) 2008, David Manura.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-(end license)
---]]
