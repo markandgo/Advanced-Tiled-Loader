@@ -13,7 +13,7 @@ local TileLayer  = require(ATL_PATH .. "TileLayer")
 -- local Tile       = require(ATL_PATH .. "Tile")
 -- local Object     = require(ATL_PATH .. "Object")
 -- local ObjectLayer= require(ATL_PATH .. "ObjectLayer")
-local imageCache = {}
+local imageCache = setmetatable({},{__mode = 'v'})
 
 ---------------------------------------------------------------------------------------------------
 -- PATH FUNCTIONS
