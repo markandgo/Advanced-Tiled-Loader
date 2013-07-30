@@ -56,21 +56,6 @@ function Map:newTileLayer(args,position)
    return layer
 end
 ---------------------------------------------------------------------------------------------------
-function Map:callback(cb_name, ...)
-	local order = self.layerOrder
-	for i=1,#order do
-		local layer = order[i]
-      if layer[cb_name] then layer[cb_name](layer, ...) end
-	end
-end
----------------------------------------------------------------------------------------------------
-function Map:draw(x,y)
-	local order = self.layerOrder
-	for i = 1,#order do
-		order[i]:draw(x,y)
-	end
-end
----------------------------------------------------------------------------------------------------
 -- function Map:newObjectLayer(position, args)
 	-- local layer= ObjectLayer:new(self, args)
 	-- local name = layer.name
@@ -94,5 +79,36 @@ end
 	
    -- return layer
 -- end
+---------------------------------------------------------------------------------------------------
+function Map:fromIso(ix,iy)
+	local tw,th= self.tilewidth,self.tileheight
+	local x    = ix*tw/2 - iy*tw/2
+	local y    = ix*th/2 + iy*th/2
+	return x,y
+end
+---------------------------------------------------------------------------------------------------
+function Map:toIso(x,y)
+	local tw,th= self.tilewidth,self.tileheight
+	-- matrix inverse
+	local a,b,c,d = tw/2,tw/2,th/2,th/2
+	local det     = 1/(a*d-b*c)
+	local ix,iy   = det * (d * x - b * y), det * (-c * x + a * y)
+	return ix,iy
+end
+---------------------------------------------------------------------------------------------------
+function Map:callback(cb_name, ...)
+	local order = self.layerOrder
+	for i=1,#order do
+		local layer = order[i]
+      if layer[cb_name] then layer[cb_name](layer, ...) end
+	end
+end
+---------------------------------------------------------------------------------------------------
+function Map:draw(x,y)
+	local order = self.layerOrder
+	for i = 1,#order do
+		order[i]:draw(x,y)
+	end
+end
 ---------------------------------------------------------------------------------------------------
 return Map
