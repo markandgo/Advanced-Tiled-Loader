@@ -291,7 +291,7 @@ function Loader._expandTileLayer(tmxlayer,tmxmap,map)
 		map       = map,
 		name      = tmxlayer.name,
 		opacity   = tmxlayer.opacity,
-		visible   = tmxlayer.visible == 1,
+		visible   = (tmxlayer.visible or 1) == 1,
 		properties= nil,
 	}
 	

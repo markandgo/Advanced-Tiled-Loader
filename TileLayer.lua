@@ -21,7 +21,7 @@ function TileLayer:new(args)
 		
 		name      = a.name or 'Unamed Layer',
 		opacity   = a.opacity or 1, 
-		visible   = a.visible ~= nil or true,
+		visible   = (a.visible == nil and true) or a.visible,
 		properties= a.properties or {},
 		
 		parallaxX = a.parallaxX or 1,
