@@ -3,7 +3,6 @@ local Grid       = require(ATL_PATH..'Grid')
 local TileLayer  = {class= "TileLayer"}
 TileLayer.__index= TileLayer
 TileLayer.__call = function(self,x,y) return self._grid:get(x,y) end
-local dummyquad  = love.graphics.newQuad(0,0,0,0, 0,0)
 
 local addQuad = 'addq'
 local setQuad = 'setq'
@@ -11,6 +10,9 @@ if love.graphics.newGeometry then
 	addQuad = 'add'
 	setQuad = 'set'
 end
+local dummy_image     = love.graphics.newImage( love.image.newImageData(1,1) )
+local batch_id_offset = love.graphics.newSpriteBatch(dummy_image,1):add(0,0,0,0)
+
 ---------------------------------------------------------------------------------------------------
 function TileLayer:new(args)
 	local a = args
@@ -31,7 +33,7 @@ function TileLayer:new(args)
 		_gridflip = Grid:new(),
 		-- _tilerange= {0,0,a.map.width-1,a.map.height-1},		
 		_batches  = {},
-		_redraw   = {}, -- coords of tiles to be redrawn
+		_redraw   = {}, -- coords of tiles to be redrawn (ty has 16 bits)
 	}
 	return setmetatable(tilelayer,TileLayer)
 end
@@ -85,7 +87,6 @@ function TileLayer:draw(x,y)
 		local ty = coord % offset
 		local tx = (coord - ty) / offset
 		self:redrawTile(tx,ty)
-		self._redraw[coord] = nil
 	end
 
 	x = (x or 0) * self.parallaxX + self.offsetX
@@ -104,7 +105,7 @@ function TileLayer:redrawTile(tx,ty)
 	local batch  = self._batches[tile.tileset]
 	local tileset= tile.tileset
 	local qw,qh  = tileset.tilewidth , tileset.tileheight
-	local id     = (ty * map.width) + 1 + tx
+	local id     = (ty * map.width) + tx + batch_id_offset
 		
 	local flipbits= self._gridflip:get(tx,ty) or 0
 	local flipX   = math.floor(flipbits / 4) == 1       
@@ -160,8 +161,7 @@ function TileLayer:redrawTile(tx,ty)
 	
 	end
 	batch[setQuad](batch, id, tile.quad, x+dx,y+dy, angle, sx,sy, ox,oy)
-	
-	self._redraw[tx * offset + ty] = nil
+	self._redraw[tx*offset + ty] = nil
 end
 ---------------------------------------------------------------------------------------------------
 return TileLayer
