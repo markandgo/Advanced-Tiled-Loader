@@ -76,6 +76,17 @@ local function newHandler()
 	return setmetatable(h,handler)
 end
 ---------------------------------------------------------------------------------------------------
+-- Convert string bytes to numbers
+local function byteToNumber(str)
+	local num = 0
+	local len = #str
+	for i = 1,len do
+		num = num + string.byte(str,i) * 256^(i-1)
+	end
+	return num
+end
+---------------------------------------------------------------------------------------------------
+
 local Loader = {}
 ---------------------------------------------------------------------------------------------------
 function Loader.load(filename)
