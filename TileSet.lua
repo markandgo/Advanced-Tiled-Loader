@@ -19,21 +19,25 @@ function TileSet:new(args)
 		source     = a.source,
 		tilewidth  = a.tilewidth,
 		tileheight = a.tileheight,
+		
 		image      = a.image,
 		imagesource= a.imagesource,
-		-- trans      = a.trans,
+		trans      = a.trans, -- hexadecimal string
+		
 		tiles      = a.tiles, -- indexed by local id
 		
 		-- optional
 		name       = a.name or 'Unamed TileSet',
 		spacing    = a.spacing or 0,
 		margin     = a.margin or 0,
+		properties = a.properties or {},
+		
 		offsetX    = a.offsetX or 0,
 		offsetY    = a.offsetY or 0,
-		properties = a.properties or {},
+		
 	},TileSet)
 	
-	if not tileset.tiles then tileset.tiles = TileSet.makeTiles(tileset) end
+	if not tileset.tiles and tileset.image then tileset.tiles = TileSet.makeTiles(tileset) end
 	
 	return tileset
 end
@@ -53,6 +57,7 @@ end
 function TileSet:makeTiles()
 	local x,y   = self.margin, self.margin
 	local tiles = {}
+	assert(self.image,'Cannot make tiles without an Image!')
    local iw,ih = self.image:getWidth(), self.image:getHeight()
 	local tw,th = self.tilewidth,self.tileheight
 	local gid   = self.firstgid
@@ -67,7 +72,7 @@ function TileSet:makeTiles()
 				image  = self.image,
 				quad   = quad,
 			}
-			table.insert(tiles,id,tile)
+			tiles[id] = tile
 			x  = x + tw + self.spacing
 			id = id + 1
 			gid= gid + 1

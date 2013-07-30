@@ -26,6 +26,7 @@ function Map:new(args)
 		
 		properties = a.properties or {},
 		
+		directory  = a.directory, -- file path to map
 	},Map)
 end
 ---------------------------------------------------------------------------------------------------
