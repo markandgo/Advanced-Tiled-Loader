@@ -21,7 +21,7 @@ function TileLayer:new(args)
 		
 		name      = a.name or 'Unamed Layer',
 		opacity   = a.opacity or 1, 
-		visible   = a.visible or 1,
+		visible   = a.visible ~= nil or true,
 		properties= a.properties or {},
 		
 		parallaxX = a.parallaxX or 1,
@@ -82,7 +82,7 @@ function TileLayer:rotateTile(tx,ty)
 end
 ---------------------------------------------------------------------------------------------------
 function TileLayer:draw(x,y)
-	if self.visible == 0 then return end
+	if not self.visible then return end
 	for coord in pairs(self._redraw) do
 		local ty = coord % offset
 		local tx = (coord - ty) / offset
