@@ -3,17 +3,17 @@
 ---------------------------------------------------------------------------------------------------
 
 -- Define path so lua knows where to look for files.
-ATL_PATH         = ATL_PATH or (...):match('^.+[%.\\/]') or ''
-local unb64      = require ('mime').unb64
-local xmlparser  = require(ATL_PATH .. 'external.xml')
-local deflate    = require(ATL_PATH ..'external.deflate')
-local Map        = require(ATL_PATH .. "Map")
-local TileSet    = require(ATL_PATH .. "TileSet")
-local TileLayer  = require(ATL_PATH .. "TileLayer")
--- local Tile       = require(ATL_PATH .. "Tile")
--- local Object     = require(ATL_PATH .. "Object")
--- local ObjectLayer= require(ATL_PATH .. "ObjectLayer")
-local imageCache = setmetatable({},{__mode = 'v'})
+TILED_LOADER_PATH   = TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
+local unb64         = require ('mime').unb64
+local xmlparser     = require(TILED_LOADER_PATH .. 'external.xml')
+local deflate       = require(TILED_LOADER_PATH ..'external.deflate')
+local Map           = require(TILED_LOADER_PATH .. "Map")
+local TileSet       = require(TILED_LOADER_PATH .. "TileSet")
+local TileLayer     = require(TILED_LOADER_PATH .. "TileLayer")
+-- local Tile       = require(TILED_LOADER_PATH .. "Tile")
+-- local Object     = require(TILED_LOADER_PATH .. "Object")
+-- local ObjectLayer= require(TILED_LOADER_PATH .. "ObjectLayer")
+local imageCache    = setmetatable({},{__mode= 'v'})
 
 ---------------------------------------------------------------------------------------------------
 -- PATH FUNCTIONS

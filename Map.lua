@@ -1,9 +1,9 @@
-ATL_PATH         = ATL_PATH or (...):match('^.+[%.\\/]') or ''
-local Tile       = require(ATL_PATH..'Tile')
-local TileSet    = require(ATL_PATH..'TileSet')
-local TileLayer  = require(ATL_PATH..'TileLayer')
--- local Object     = require(ATL_PATH..'Object')
--- local ObjectLayer= require(ATL_PATH..'ObjectLayer')
+TILED_LOADER_PATH   = TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
+local Tile          = require(TILED_LOADER_PATH..'Tile')
+local TileSet       = require(TILED_LOADER_PATH..'TileSet')
+local TileLayer     = require(TILED_LOADER_PATH..'TileLayer')
+-- local Object     = require(TILED_LOADER_PATH..'Object')
+-- local ObjectLayer= require(TILED_LOADER_PATH..'ObjectLayer')
 
 local Map   = {class= "Map"}
 Map.__index = Map

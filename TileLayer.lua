@@ -1,5 +1,5 @@
-ATL_PATH         = ATL_PATH or (...):match('^.+[%.\\/]') or ''
-local Grid       = require(ATL_PATH..'Grid')
+TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
+local Grid       = require(TILED_LOADER_PATH..'Grid')
 local TileLayer  = {class= "TileLayer"}
 TileLayer.__index= TileLayer
 TileLayer.__call = function(self,x,y) return self._grid:get(x,y) end

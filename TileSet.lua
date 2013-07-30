@@ -2,11 +2,11 @@
 -- -= TileSet =-
 ---------------------------------------------------------------------------------------------------
 -- Setup
-ATL_PATH       = ATL_PATH or (...):match('^.+[%.\\/]') or ''
-local Tile     = require(ATL_PATH..'Tile')
-local TileSet  = {class= "TileSet"}
-TileSet.__index= TileSet
-TileSet.__call = function(self,id)
+TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
+local Tile       = require(TILED_LOADER_PATH..'Tile')
+local TileSet    = {class= "TileSet"}
+TileSet.__index  = TileSet
+TileSet.__call   = function(self,id)
 	return self.tiles[id]
 end
 
