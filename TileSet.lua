@@ -27,7 +27,7 @@ function TileSet:new(args)
 		tiles      = a.tiles, -- indexed by local id
 		
 		-- optional
-		name       = a.name or 'Unamed TileSet',
+		name       = a.name or 'Unnamed TileSet',
 		spacing    = a.spacing or 0,
 		margin     = a.margin or 0,
 		properties = a.properties or {},

@@ -17,9 +17,9 @@ local batch_id_offset = love.graphics.newSpriteBatch(dummy_image,1):add(0,0,0,0)
 function TileLayer:new(args)
 	local a = args
 	local tilelayer = {
-		map       = a.map,
+		map       = a.map or error 'Must specify a map as an argument',
 		
-		name      = a.name or 'Unamed Layer',
+		name      = a.name or 'Unnamed Layer',
 		opacity   = a.opacity or 1, 
 		visible   = (a.visible == nil and true) or a.visible,
 		properties= a.properties or {},
