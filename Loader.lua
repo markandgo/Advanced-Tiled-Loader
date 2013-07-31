@@ -135,6 +135,11 @@ function Loader._expandMap(tmxmap)
 		local etype = element.element
 		if etype == 'tileset' then
 			local tileset = Loader._expandTileSet(element,tmxmap)
+			
+			if map.tilesets[tileset.name] then 
+				error( string.format( 'A tileset named \"%s\" already exists', tileset.name ) )
+			end
+			
 			map.tilesets[tileset.name] = tileset
 			for i = 0,#tileset.tiles do
 				local tile = tileset.tiles[i]
@@ -143,6 +148,11 @@ function Loader._expandMap(tmxmap)
 			
 		elseif etype == 'layer' then
 			local tilelayer = Loader._expandTileLayer(element,tmxmap,map)
+			
+			if map.layers[tilelayer.name] then 
+				error( string.format( 'A layer named \"%s\" already exists', tilelayer.name ) )
+			end
+			
 			map.layers[tilelayer.name] = tilelayer
 			table.insert(map.layerOrder,tilelayer)
 		elseif etype == 'properties' then
@@ -300,7 +310,7 @@ end
 function Loader._expandTileLayer(tmxlayer,tmxmap,map)
 	local layer = TileLayer:new{
 		map       = map,
-		name      = tmxlayer.name,
+		name      = tmxlayer.name or ('Layer '..#map.layerOrder+1),
 		opacity   = tmxlayer.opacity,
 		visible   = (tmxlayer.visible or 1) == 1,
 		properties= nil,

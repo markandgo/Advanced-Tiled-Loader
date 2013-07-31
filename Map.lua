@@ -35,6 +35,7 @@ function Map:newTileSet(args)
 	if self.tilesets[name] then 
 	  error(  string.format("Map:newTileSet - A tile set named \"%s\" already exists.", name) )
 	end
+	self.tilesets[name] = tileset
 	for _,tile in ipairs(tileset.tiles) do
 		self.tiles[tile.gid] = tile
 	end
