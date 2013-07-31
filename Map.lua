@@ -62,7 +62,7 @@ function Map:newObjectLayer(args, position)
 	layer.map  = self
 	local name = layer.name
    if self.layers[name] then 
-      error( string.format("Map:newTileLayer - A layer named \"%s\" already exists.", name) )
+      error( string.format("Map:newObjectLayer - A layer named \"%s\" already exists.", name) )
    end
    self.layers[name] = layer
    table.insert(self.layerOrder, position or #self.layerOrder + 1, layer) 
@@ -77,7 +77,7 @@ function Map:newCustomLayer(args, position)
 	end
 	
 	if self.layers[layer.name] then 
-      error( string.format("Map:newTileLayer - A layer named \"%s\" already exists.", name) )
+      error( string.format("Map:newCustomLayer - A layer named \"%s\" already exists.", name) )
    end
 	self.layers[layer.name]= layer
    table.insert(self.layerOrder, position or #self.layerOrder + 1, layer) 
