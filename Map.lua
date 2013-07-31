@@ -71,7 +71,7 @@ function Map:newObjectLayer(args, position)
 end
 ---------------------------------------------------------------------------------------------------
 function Map:newCustomLayer(args, position)
-	local layer = {class = 'CustomLayer'}
+	local layer = {class = 'CustomLayer', map = self}
 	for i,v in pairs(args) do
 		layer[i] = v
 	end
@@ -110,10 +110,7 @@ function Map:callback(cb_name, ...)
 end
 ---------------------------------------------------------------------------------------------------
 function Map:draw(x,y)
-	local order = self.layerOrder
-	for i = 1,#order do
-		order[i]:draw(x,y)
-	end
+	self:callback('draw', x,y)
 end
 ---------------------------------------------------------------------------------------------------
 return Map
