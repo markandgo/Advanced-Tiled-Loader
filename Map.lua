@@ -1,9 +1,8 @@
-TILED_LOADER_PATH   = TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
-local Tile          = require(TILED_LOADER_PATH..'Tile')
-local TileSet       = require(TILED_LOADER_PATH..'TileSet')
-local TileLayer     = require(TILED_LOADER_PATH..'TileLayer')
--- local Object     = require(TILED_LOADER_PATH..'Object')
--- local ObjectLayer= require(TILED_LOADER_PATH..'ObjectLayer')
+TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
+local Tile       = require(TILED_LOADER_PATH..'Tile')
+local TileSet    = require(TILED_LOADER_PATH..'TileSet')
+local TileLayer  = require(TILED_LOADER_PATH..'TileLayer')
+local ObjectLayer= require(TILED_LOADER_PATH..'ObjectLayer')
 
 local Map   = {class= "Map"}
 Map.__index = Map
@@ -56,29 +55,34 @@ function Map:newTileLayer(args,position)
    return layer
 end
 ---------------------------------------------------------------------------------------------------
--- function Map:newObjectLayer(position, args)
-	-- local layer= ObjectLayer:new(self, args)
-	-- local name = layer.name
-   -- if self.layers[name] then 
-      -- error( string.format("Map:newTileLayer - A layer named \"%s\" already exists.", name) )
-   -- end
-   -- self.layers[name] = layer
-   -- table.insert(self.layerOrder, position or #self.layerOrder + 1, layer) 
+function Map:newObjectLayer(args, position)
+	position   = position or #self.layerOrder+1
+	local layer= ObjectLayer:new(args)
+	layer.map  = self
+	local name = layer.name
+   if self.layers[name] then 
+      error( string.format("Map:newTileLayer - A layer named \"%s\" already exists.", name) )
+   end
+   self.layers[name] = layer
+   table.insert(self.layerOrder, position or #self.layerOrder + 1, layer) 
 	
-   -- return layer
--- end
+   return layer
+end
 ---------------------------------------------------------------------------------------------------
--- function Map:newCustomLayer(name, position, layer)
-	-- if self.layers[name] then 
-      -- error( string.format("Map:newTileLayer - A layer named \"%s\" already exists.", name) )
-   -- end
-	-- layer            = layer or {name= name}
-	-- layer.class      = 'CustomLayer'
-	-- self.layers[name]= layer
-   -- table.insert(self.layerOrder, position or #self.layerOrder + 1, layer) 
+function Map:newCustomLayer(args, position)
+	local layer = {class = 'CustomLayer'}
+	for i,v in pairs(args) do
+		layer[i] = v
+	end
 	
-   -- return layer
--- end
+	if self.layers[layer.name] then 
+      error( string.format("Map:newTileLayer - A layer named \"%s\" already exists.", name) )
+   end
+	self.layers[layer.name]= layer
+   table.insert(self.layerOrder, position or #self.layerOrder + 1, layer) 
+	
+   return layer
+end
 ---------------------------------------------------------------------------------------------------
 function Map:fromIso(ix,iy)
 	local tw,th= self.tilewidth,self.tileheight
