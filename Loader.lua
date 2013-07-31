@@ -3,17 +3,15 @@
 ---------------------------------------------------------------------------------------------------
 
 -- Define path so lua knows where to look for files.
-TILED_LOADER_PATH   = TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
-local unb64         = require ('mime').unb64
-local xmlparser     = require(TILED_LOADER_PATH .. 'external.xml')
-local deflate       = require(TILED_LOADER_PATH ..'external.deflate')
-local Map           = require(TILED_LOADER_PATH .. "Map")
-local TileSet       = require(TILED_LOADER_PATH .. "TileSet")
-local TileLayer     = require(TILED_LOADER_PATH .. "TileLayer")
--- local Tile       = require(TILED_LOADER_PATH .. "Tile")
--- local Object     = require(TILED_LOADER_PATH .. "Object")
--- local ObjectLayer= require(TILED_LOADER_PATH .. "ObjectLayer")
-local imageCache    = setmetatable({},{__mode= 'v'})
+TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
+local base64     = require 'external.base64'
+local xmlparser  = require(TILED_LOADER_PATH .. 'external.xml')
+local deflate    = require(TILED_LOADER_PATH ..'external.deflate')
+local Map        = require(TILED_LOADER_PATH .. "Map")
+local TileSet    = require(TILED_LOADER_PATH .. "TileSet")
+local TileLayer  = require(TILED_LOADER_PATH .. "TileLayer")
+local ObjectLayer= require(TILED_LOADER_PATH .. "ObjectLayer")
+local imageCache = setmetatable({},{__mode= 'v'})
 
 ---------------------------------------------------------------------------------------------------
 -- PATH FUNCTIONS
@@ -46,11 +44,9 @@ handler.starttag = function(self,name,attr)
 	local element = {element = name}
 	if attr then
 		for k,v in pairs(attr) do
-			if not element[k] then
-				v = tonumber(v) or v
-				v = v == 'true' and true or v == 'false' and false or v
-				element[k] = v
-			end
+			v = k ~= 'trans' and tonumber(v) or v
+			v = v == 'true' and true or v == 'false' and false or v
+			element[k] = v
 		end
 	end
 	stack.len = stack.len + 1
@@ -146,15 +142,17 @@ function Loader._expandMap(tmxmap)
 				map.tiles[tile.gid] = tile
 			end
 			
-		elseif etype == 'layer' then
-			local tilelayer = Loader._expandTileLayer(element,tmxmap,map)
+		elseif etype == 'layer' or etype == 'objectgroup' then
+			local layer = etype == 'layer' and Loader._expandTileLayer(element,tmxmap,map)
+			or Loader._expandObjectGroup(element,tmxmap,map)
 			
-			if map.layers[tilelayer.name] then 
-				error( string.format( 'A layer named \"%s\" already exists', tilelayer.name ) )
+			if map.layers[layer.name] then 
+				error( string.format( 'A layer named \"%s\" already exists', layer.name ) )
 			end
 			
-			map.layers[tilelayer.name] = tilelayer
-			table.insert(map.layerOrder,tilelayer)
+			map.layers[layer.name] = layer
+			table.insert(map.layerOrder,layer)
+		
 		elseif etype == 'properties' then
 			map.properties = Loader._expandProperties(element)
 		end
@@ -259,7 +257,7 @@ function Loader._streamLayerData(tmxlayer,tmxmap)
 	for i = 1,#tmxlayer do
 		if tmxlayer[i].element == 'data' then data = tmxlayer[i]; break end
 	end
-	local str   = data.encoding == 'base64' and unb64(data[1]) or data[1]
+	local str   = data.encoding == 'base64' and base64.dec(data[1]) or data[1]
 	
 	local bytes = {len = 0}
 	
@@ -300,8 +298,9 @@ function Loader._streamLayerData(tmxlayer,tmxmap)
 			local gid         = num % divbits
 			local flips       = math.floor(num / 2^29)
 			
-			local y = math.floor((count-1)/w)
+			local y = math.ceil(count/w) - 1
 			local x = count - (y)*w -1
+			
 			coroutine.yield(gid,x,y,flips)
 		end
 	end)
@@ -320,11 +319,77 @@ function Loader._expandTileLayer(tmxlayer,tmxmap,map)
 		local etype = element.element
 		if etype == 'data' then
 			for gid,x,y,flipbits in Loader._streamLayerData(tmxlayer,tmxmap) do
+			
 				if gid ~= 0 then
 					local tile = map.tiles[gid]
 					layer:setTile(x,y, tile,flipbits)
 				end
 			end
+		elseif etype == 'properties' then
+			layer.properties = Loader._expandProperties(element)
+		end
+	end
+	
+	return layer
+end
+---------------------------------------------------------------------------------------------------
+function Loader._expandObjectGroup(tmxlayer,tmxmap,map)
+	local layer = ObjectLayer:new{
+		map        = map,
+		name       = tmxlayer.name or ('Layer '..#map.layerOrder+1),
+		opacity    = tmxlayer.opacity,
+		visible    = (tmxlayer.visible or 1)== 1,
+		
+		color      = nil,
+		properties = nil,
+		objects    = nil,
+		objectOrder= nil,
+	}
+	
+	if tmxlayer.color then
+		local color = {}
+		for i = 2,#tmxlayer.color,2 do
+			table.insert(color, tonumber( tmxlayer.color:sub(i,i+1), 16 ) )
+		end
+		layer.color = color
+	end
+	
+	for i,element in ipairs(tmxlayer) do
+		local etype = element.element
+		if etype == 'object' then
+			
+			local e = element
+			
+			local object = layer:newObject{
+				name      = e.name,
+				type      = e.type,
+				gid       = e.gid,
+				x         = e.x,
+				y         = e.y,
+				width     = e.width,
+				height    = e.height,
+				visible   = (e.visible == nil and true) or e.visible,
+				
+				polygon   = nil,
+				polyline  = nil,
+				properties= nil,
+			}
+			
+			for i,sub in ipairs(e) do
+				local etype = sub.element
+				if etype == 'properties' then
+					object.properties = Loader._expandProperties(sub)
+				end
+				if etype == 'polygon' or etype == 'polyline' then
+					local points = sub.points
+					local t      = {}
+					for num in points:gmatch '-?%d+' do
+						table.insert(t,tonumber(num))
+					end
+					object[etype] = t
+				end
+			end
+			
 		elseif etype == 'properties' then
 			layer.properties = Loader._expandProperties(element)
 		end
