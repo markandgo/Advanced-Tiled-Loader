@@ -38,6 +38,7 @@ function TileLayer:new(args)
 	return setmetatable(tilelayer,TileLayer)
 end
 ---------------------------------------------------------------------------------------------------
+-- store y coordinate as 16 bits for redraw
 local offset = 2^16
 function TileLayer:setTile(tx,ty,tile,flipbits)
 	self._grid:set(tx,ty,tile)
@@ -66,7 +67,7 @@ end
 function TileLayer:rotateTile(tx,ty)
 	local flip = self._gridflip:get(tx,ty) or 0
 	
-	-- From Tiled source: tilelayer.cpp
+	-- Amazing hack
 	if flip == 0 then flip = 5
 	elseif flip == 1 then flip = 4 
 	elseif flip == 2 then flip = 1
