@@ -83,7 +83,10 @@ local function byteToNumber(str)
 end
 ---------------------------------------------------------------------------------------------------
 
-local Loader = {}
+local Loader = {
+	filterMin = 'nearest', 
+	filterMag = 'nearest',
+}
 ---------------------------------------------------------------------------------------------------
 function Loader.load(filename)
 	local tmxmap = Loader.parseXML(filename)
@@ -247,6 +250,7 @@ function Loader._expandImage(tmximage,tmxmap)
 		else 
 			image = love.graphics.newImage(source)
 		end
+		image:setFilter(Loader.filterMin,Loader.filterMag)
 		imageCache[source..(trans or '')] = image
 	end
 	tmximage.image = image
