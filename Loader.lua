@@ -343,7 +343,6 @@ function Loader._expandObjectGroup(tmxlayer,tmxmap,map)
 		color      = nil,
 		properties = nil,
 		objects    = nil,
-		objectOrder= nil,
 	}
 	
 	if tmxlayer.color then

@@ -27,7 +27,6 @@ function ObjectLayer:new(args)
 		offsetY    = a.offsetY or 0,
 		
 		objects    = {},
-		objectOrder= {},
       
    }, ObjectLayer)
     
@@ -37,14 +36,9 @@ end
 ---------------------------------------------------------------------------------------------------
 -- Creates a new object, automatically inserts it into the layer, and then returns it
 function ObjectLayer:newObject(args, position)
-	args.name   = args.name or 'Object '..(#self.objectOrder + 1)
 	local object= Object:new(args)
 	object.layer= self
-   if self.objects[object.name] then 
-      error(  string.format("An object named \"%s\" already exists.", object.name) )   
-   end
-   self.objects[object.name] = object
-   table.insert(self.objectOrder, position or #self.objectOrder+1, object) 
+   table.insert(self.objects, position or #self.objects+1, object) 
    return object
 end
 
@@ -68,7 +62,7 @@ function ObjectLayer:draw(x,y)
 	local color   = self.color
 	love.graphics.setColor(color[1],color[2],color[3],self.opacity*255)
 	
-	for _,object in ipairs(self.objectOrder) do
+	for _,object in ipairs(self.objects) do
 		if object.gid then
 			love.graphics.setColor(255,255,255,a)
 			object:draw()
