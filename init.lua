@@ -1,4 +1,4 @@
-TILED_LOADER_PATH = TILED_LOADER_PATH or ({...})[1]:gsub("[%.\\/]init$", "") .. '.'
+TILED_LOADER_PATH  = TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
 
 -- Return the classes in a table
 return {

@@ -2,7 +2,7 @@
 -- -= ObjectLayer =-
 ---------------------------------------------------------------------------------------------------
 -- Setup
-TILED_LOADER_PATH = TILED_LOADER_PATH or ({...})[1]:gsub("[%.\\/][Oo]bject[Ll]ayer$", "") .. '.'
+TILED_LOADER_PATH  = TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
 local Object       = require( TILED_LOADER_PATH .. "Object")
 local ObjectLayer  = {class= "ObjectLayer"}
 local grey         = {128,128,128,255}
