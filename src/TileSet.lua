@@ -43,12 +43,12 @@ function TileSet:new(args)
 end
 ----------------------------------------------------------------------------------------------------
 function TileSet:columns()
-	return math.ceil( (self.image:getWidth() - self.margin*2 - self.spacing) /
+	return math.floor( (self.image:getWidth() - self.margin*2 + self.spacing) /
 					(self.tilewidth + self.spacing) )
 end
 ---------------------------------------------------------------------------------------------------
 function TileSet:rows()
-	return math.ceil( (self.image:getHeight() - self.margin*2 - self.spacing) /
+	return math.floor( (self.image:getHeight() - self.margin*2 + self.spacing) /
 					(self.tileheight + self.spacing) )	
 end
 ---------------------------------------------------------------------------------------------------
