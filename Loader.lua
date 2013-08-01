@@ -4,7 +4,7 @@
 
 -- Define path so lua knows where to look for files.
 TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
-local base64     = require 'external.base64'
+local base64     = require(TILED_LOADER_PATH .. 'external.base64')
 local xmlparser  = require(TILED_LOADER_PATH .. 'external.xml')
 local deflate    = require(TILED_LOADER_PATH ..'external.deflate')
 local Map        = require(TILED_LOADER_PATH .. "Map")
