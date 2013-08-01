@@ -2,7 +2,7 @@
 -- -= Tile =-
 ---------------------------------------------------------------------------------------------------
 
-local draw = love.graphics.draw
+local draw = love.graphics.geometry and love.graphics.draw or love.graphics.drawq
 
 -- Setup
 local Tile = {class = "Tile"}
