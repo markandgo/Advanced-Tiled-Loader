@@ -80,8 +80,8 @@ function Object:draw()
 		local tile   = map.tiles[self.gid]
 		local tileset= tile.tileset
 		
-		-- align center bottom
-		tile:draw(-tileset.tilewidth/2,-tileset.tileheight)
+		-- align bottom center (iso) / left (ortho)
+		tile:draw((isIso and 0.5 or 0) * -tileset.tilewidth,-tileset.tileheight)
 	else
 		if isIso then 
 			local w,h  = self.width/th, self.height/th
