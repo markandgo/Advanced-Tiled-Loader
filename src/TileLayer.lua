@@ -84,14 +84,6 @@ end
 ---------------------------------------------------------------------------------------------------
 function TileLayer:draw(x,y)
 	if not self.visible then return end
-
-	local unbind
-	if next(self._redraw) then
-		for tileset,batch in pairs(self._batches) do
-			batch:bind()
-		end
-		unbind = true
-	end
 	
 	for coord in pairs(self._redraw) do
 		local ty = coord % offset
@@ -107,12 +99,6 @@ function TileLayer:draw(x,y)
 		love.graphics.draw(batch, x + tileset.offsetX, y + tileset.offsetY)
 	end
 	love.graphics.setColor(r,g,b,a)
-
-	if unbind then
-		for tileset,batch in pairs(self._batches) do
-			batch:unbind()
-		end
-	end
 end
 ---------------------------------------------------------------------------------------------------
 function TileLayer:redrawTile(tx,ty)
