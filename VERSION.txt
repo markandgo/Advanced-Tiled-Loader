@@ -2,6 +2,17 @@ Advanced Tiled Loader
 --------------------------------------------------------------------------------------
 
 CHANGES:
+0.1.1F (2013/8/3)
+- Added map saving support
+- Added basic ellipse support as a boolean value for objects
+- Changed tilelayer to bind/unbind spritebaches when redrawing list
+- Changed TileLayer to be a subclass of Grid like before
+- Changed loading/saving to return an error string as a second value
+- Changed map saving internal handling of attributes
+- Changed "element" field to reference a common variable "elementKey"
+  containing a user defineable value
+- Removed source field from TileSet
+
 0.1.0F (2013/8/1)
 - Complete revamp of code by Minh Ngo
 

@@ -1,8 +1,8 @@
 TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
 local Grid       = require(TILED_LOADER_PATH..'Grid')
-local TileLayer  = {class= "TileLayer"}
+local TileLayer  = setmetatable( {class= "TileLayer"}, {__index = Grid})
 TileLayer.__index= TileLayer
-TileLayer.__call = function(self,x,y) return self._grid:get(x,y) end
+TileLayer.__call = function(self,x,y) return self:get(x,y) end
 
 local addQuad = 'addq'
 local setQuad = 'setq'
@@ -29,7 +29,7 @@ function TileLayer:new(args)
 		offsetX   = a.offsetX or 0,
 		offsetY   = a.offsetY or 0,
 		
-		_grid     = Grid:new(),
+		cells     = {},
 		_gridflip = Grid:new(),
 		-- _tilerange= {0,0,a.map.width-1,a.map.height-1},		
 		_batches  = {},
@@ -41,7 +41,7 @@ end
 -- store y coordinate as 16 bits for redraw
 local offset = 2^16
 function TileLayer:setTile(tx,ty,tile,flipbits)
-	self._grid:set(tx,ty,tile)
+	self:set(tx,ty,tile)
 	if flipbits then self._gridflip:set(tx,ty,flipbits) end
 	self._redraw[tx*offset + ty] = true
 end
@@ -84,6 +84,15 @@ end
 ---------------------------------------------------------------------------------------------------
 function TileLayer:draw(x,y)
 	if not self.visible then return end
+
+	local unbind
+	if next(self._redraw) then
+		for tileset,batch in pairs(self._batches) do
+			batch:bind()
+		end
+		unbind = true
+	end
+	
 	for coord in pairs(self._redraw) do
 		local ty = coord % offset
 		local tx = (coord - ty) / offset
@@ -98,6 +107,12 @@ function TileLayer:draw(x,y)
 		love.graphics.draw(batch, x + tileset.offsetX, y + tileset.offsetY)
 	end
 	love.graphics.setColor(r,g,b,a)
+
+	if unbind then
+		for tileset,batch in pairs(self._batches) do
+			batch:unbind()
+		end
+	end
 end
 ---------------------------------------------------------------------------------------------------
 function TileLayer:redrawTile(tx,ty)

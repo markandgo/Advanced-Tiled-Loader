@@ -16,7 +16,6 @@ function TileSet:new(args)
 	local a = args
 	local tileset = setmetatable({
 		firstgid   = a.firstgid,
-		source     = a.source,
 		tilewidth  = a.tilewidth,
 		tileheight = a.tileheight,
 		

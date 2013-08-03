@@ -17,6 +17,7 @@ function Object:new(args)
 		layer     = a.layer,
 		polygon   = a.polygon,
 		polyline  = a.polyline,
+		ellipse   = a.ellipse, -- boolean
 		gid       = a.gid,
 		
 		drawmode  = a.drawmode or 'line',
