@@ -2,6 +2,12 @@ Advanced Tiled Loader
 --------------------------------------------------------------------------------------
 
 CHANGES:
+0.1.3F (2013/8/4)
+- Added TileLayer:_addRedraw
+- Removed TileLayer:redrawTile
+- Changed (again) to TileLayer draw to allow batch bind/unbind when redrawing
+- Fixed (again) handling of trans attribute
+
 0.1.2F (2013/8/3)
 - Removed batch bind/unbind when drawing tilelayer because of
   unaccounted crash(for now)

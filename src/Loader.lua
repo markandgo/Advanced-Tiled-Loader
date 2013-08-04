@@ -51,7 +51,7 @@ handler.starttag = function(self,name,attr)
 	local element = {[elementkey] = name}
 	if attr then
 		for k,v in pairs(attr) do
-			v = k and tonumber(v,10) or v
+			v = k and tonumber(v) or v
 			v = v == 'true' and true or v == 'false' and false or v
 			element[k] = v
 		end
@@ -252,6 +252,12 @@ function Loader._expandImage(tmximage,tmxmap)
 	if not image then
 		if trans then	
 			local color = {}
+			
+			-- hack to undo string to number conversion
+			if type(trans) == 'number' then
+				trans = string.format( '%.6d', trans )
+			end
+			
 			for i = 1,#trans,2 do
 				table.insert(color, tonumber( trans:sub(i,i+1), 16 ) )
 			end

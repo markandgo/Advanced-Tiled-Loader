@@ -2,7 +2,7 @@ TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
 local Grid       = require(TILED_LOADER_PATH..'Grid')
 local TileLayer  = setmetatable( {class= "TileLayer"}, {__index = Grid})
 TileLayer.__index= TileLayer
-TileLayer.__call = function(self,x,y) return self:get(x,y) end
+TileLayer.__call = function(self,x,y) return Grid.get(self,x,y) end
 
 local addQuad = 'addq'
 local setQuad = 'setq'
@@ -31,7 +31,7 @@ function TileLayer:new(args)
 		
 		cells     = {},
 		_gridflip = Grid:new(),
-		-- _tilerange= {0,0,a.map.width-1,a.map.height-1},		
+		
 		_batches  = {},
 		_redraw   = {}, -- coords of tiles to be redrawn (ty has 16 bits)
 	}
@@ -43,7 +43,7 @@ local offset = 2^16
 function TileLayer:setTile(tx,ty,tile,flipbits)
 	self:set(tx,ty,tile)
 	if flipbits then self._gridflip:set(tx,ty,flipbits) end
-	self._redraw[tx*offset + ty] = true
+	self:_addRedraw(tx,ty)
 end
 ---------------------------------------------------------------------------------------------------
 -- nil for unchange, true to flip
@@ -60,7 +60,7 @@ function TileLayer:flipTile(tx,ty, flipX,flipY)
 	end
 	
 	self._gridflip:set(tx,ty, flip)
-	self._redraw[tx*offset + ty] = true
+	self:_addRedraw(tx,ty)
 end
 ---------------------------------------------------------------------------------------------------
 -- rotate 90 degrees
@@ -79,16 +79,79 @@ function TileLayer:rotateTile(tx,ty)
 	end
 	
 	self._gridflip:set(tx,ty, flip)
-	self._redraw[tx*offset + ty] = true
+	self:_addRedraw(tx,ty)
 end
 ---------------------------------------------------------------------------------------------------
 function TileLayer:draw(x,y)
 	if not self.visible then return end
 	
-	for coord in pairs(self._redraw) do
-		local ty = coord % offset
-		local tx = (coord - ty) / offset
-		self:redrawTile(tx,ty)
+	local unbind
+	
+	if next(self._redraw) then
+		unbind    = true
+		local map = self.map
+		
+		for _,batch in pairs(self._batches) do
+			batch:bind()
+		end
+		
+		for coord in pairs(self._redraw) do
+		
+			local ty = coord % offset
+			local tx = (coord - ty) / offset
+			
+			local tile   = self(tx,ty)
+			local batch  = self._batches[tile.tileset]
+			local tileset= tile.tileset
+			local qw,qh  = tileset.tilewidth , tileset.tileheight
+			local id     = (ty * map.width) + tx + batch_id_offset
+				
+			local flipbits= self._gridflip:get(tx,ty) or 0
+			local flipX   = math.floor(flipbits / 4) == 1       
+			local flipY   = math.floor( (flipbits % 4) / 2) == 1
+			local flipDiag= flipbits % 2 == 1
+			
+			local x,y
+			
+			-- offsets to rotate about center
+			local ox,oy = qw/2,qh/2
+			
+			-- offsets to align to top left again
+			local dx,dy = ox,oy
+			
+			local sx,sy = flipX and -1 or 1, flipY and -1 or 1
+			local angle = 0
+			if flipDiag then
+				angle = math.pi/2
+				sx,sy = sy, sx*-1
+				
+				-- rotated tile has switched dimensions
+				dx,dy = dy,dx
+				
+				-- extra offset to align to bottom like Tiled
+				dy    = dy - (qw - map.tileheight)
+			else
+				dy    = dy - (qh - map.tileheight)
+			end
+			
+			if map.orientation == 'orthogonal' then
+		
+				x,y   = tx * map.tilewidth,
+						  ty * map.tileheight
+				
+			elseif map.orientation == 'isometric' then
+				x,y = map:fromIso(tx,ty)
+				
+				-- apex of tile (0,0) is point (0,0)
+				x   = x - (map.tilewidth/2)
+			elseif map.orientation == 'staggered' then
+			
+			end
+			batch[setQuad](batch, id, tile.quad, x+dx,y+dy, angle, sx,sy, ox,oy)
+			self._redraw[tx*offset + ty] = nil
+			
+		end
+		
 	end
 
 	x = (x or 0) * self.parallaxX + self.offsetX
@@ -96,28 +159,24 @@ function TileLayer:draw(x,y)
 	local r,g,b,a = love.graphics.getColor()
 	love.graphics.setColor(r,g,b,self.opacity*255)
 	for tileset,batch in pairs(self._batches) do
+		if unbind then batch:unbind() end
+	
 		love.graphics.draw(batch, x + tileset.offsetX, y + tileset.offsetY)
 	end
 	love.graphics.setColor(r,g,b,a)
 end
 ---------------------------------------------------------------------------------------------------
-function TileLayer:redrawTile(tx,ty)
+function TileLayer:_addRedraw(tx,ty)
+	self._redraw[tx*offset + ty] = true
+	
 	local map    = self.map
 	local tile   = self(tx,ty)
-	local batch  = self._batches[tile.tileset]
 	local tileset= tile.tileset
-	local qw,qh  = tileset.tilewidth , tileset.tileheight
-	local id     = (ty * map.width) + tx + batch_id_offset
-		
-	local flipbits= self._gridflip:get(tx,ty) or 0
-	local flipX   = math.floor(flipbits / 4) == 1       
-	local flipY   = math.floor( (flipbits % 4) / 2) == 1
-	local flipDiag= flipbits % 2 == 1
 	
-	if not batch then
+	if not self._batches[tileset] then
 		local size= map.width * map.height
 		batch     = love.graphics.newSpriteBatch(tile.image,size)
-		self._batches[tile.tileset] = batch
+		self._batches[tileset] = batch
 		
 		batch:bind()
 		for i = 1,size do
@@ -125,45 +184,6 @@ function TileLayer:redrawTile(tx,ty)
 		end
 		batch:unbind()
 	end
-	
-	local x,y
-	
-	-- offsets to rotate about center
-	local ox,oy = qw/2,qh/2
-	
-	-- offsets to align to top left again
-	local dx,dy = ox,oy
-	
-	local sx,sy = flipX and -1 or 1, flipY and -1 or 1
-	local angle = 0
-	if flipDiag then
-		angle = math.pi/2
-		sx,sy = sy, sx*-1
-		
-		-- rotated tile has switched dimensions
-		dx,dy = dy,dx
-		
-		-- extra offset to align to bottom like Tiled
-		dy    = dy - (qw - map.tileheight)
-	else
-		dy    = dy - (qh - map.tileheight)
-	end
-	
-	if map.orientation == 'orthogonal' then
-
-		x,y   = tx * map.tilewidth,
-				  ty * map.tileheight
-		
-	elseif map.orientation == 'isometric' then
-		x,y = map:fromIso(tx,ty)
-		
-		-- apex of tile (0,0) is point (0,0)
-		x   = x - (map.tilewidth/2)
-	elseif map.orientation == 'staggered' then
-	
-	end
-	batch[setQuad](batch, id, tile.quad, x+dx,y+dy, angle, sx,sy, ox,oy)
-	self._redraw[tx*offset + ty] = nil
 end
 ---------------------------------------------------------------------------------------------------
 return TileLayer
