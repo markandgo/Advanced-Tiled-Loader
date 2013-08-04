@@ -25,7 +25,6 @@ function Map:new(args)
 		
 		properties = a.properties or {},
 		
-		directory  = a.directory, -- file path to map
 	},Map)
 end
 ---------------------------------------------------------------------------------------------------
@@ -85,6 +84,8 @@ function Map:newCustomLayer(args, position)
    return layer
 end
 ---------------------------------------------------------------------------------------------------
+-- The unit length of a tile on both axes is 1. 
+-- Point (0,0) is the apex of tile (0,0).
 function Map:fromIso(ix,iy)
 	local tw,th= self.tilewidth,self.tileheight
 	local x    = ix*tw/2 - iy*tw/2
@@ -92,6 +93,7 @@ function Map:fromIso(ix,iy)
 	return x,y
 end
 ---------------------------------------------------------------------------------------------------
+-- Point (0,0) is always at the apex of tile (0,0) pre-parallax.
 function Map:toIso(x,y)
 	local tw,th= self.tilewidth,self.tileheight
 	-- matrix inverse

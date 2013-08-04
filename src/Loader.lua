@@ -51,9 +51,7 @@ handler.starttag = function(self,name,attr)
 	local element = {[elementkey] = name}
 	if attr then
 		for k,v in pairs(attr) do
-			v = k and tonumber(v) or v
-			v = v == 'true' and true or v == 'false' and false or v
-			element[k] = v
+			element[k] = tonumber(v) or v
 		end
 	end
 	stack.len = stack.len + 1
