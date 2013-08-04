@@ -43,7 +43,7 @@ local offset = 2^16
 function TileLayer:setTile(tx,ty,tile,flipbits)
 	self:set(tx,ty,tile)
 	if flipbits then self._gridflip:set(tx,ty,flipbits) end
-	self:_addRedraw(tx,ty)
+	self._redraw[tx*offset + ty] = true
 end
 ---------------------------------------------------------------------------------------------------
 -- nil for unchange, true to flip
@@ -60,7 +60,7 @@ function TileLayer:flipTile(tx,ty, flipX,flipY)
 	end
 	
 	self._gridflip:set(tx,ty, flip)
-	self:_addRedraw(tx,ty)
+	self._redraw[tx*offset + ty] = true
 end
 ---------------------------------------------------------------------------------------------------
 -- rotate 90 degrees
@@ -79,7 +79,7 @@ function TileLayer:rotateTile(tx,ty)
 	end
 	
 	self._gridflip:set(tx,ty, flip)
-	self:_addRedraw(tx,ty)
+	self._redraw[tx*offset + ty] = true
 end
 ---------------------------------------------------------------------------------------------------
 function TileLayer:draw(x,y)
@@ -103,6 +103,19 @@ function TileLayer:draw(x,y)
 			local tile   = self(tx,ty)
 			local batch  = self._batches[tile.tileset]
 			local tileset= tile.tileset
+			
+			-- make batch if it doesn't exist
+			if not self._batches[tileset] then
+				local size= map.width * map.height
+				batch     = love.graphics.newSpriteBatch(tile.image,size)
+				self._batches[tileset] = batch
+				
+				batch:bind()
+				for i = 1,size do
+					batch[addQuad](batch,tile.quad,0,0,0,0)
+				end
+			end
+			
 			local qw,qh  = tileset.tilewidth , tileset.tileheight
 			local id     = (ty * map.width) + tx + batch_id_offset
 				
@@ -164,26 +177,6 @@ function TileLayer:draw(x,y)
 		love.graphics.draw(batch, x + tileset.offsetX, y + tileset.offsetY)
 	end
 	love.graphics.setColor(r,g,b,a)
-end
----------------------------------------------------------------------------------------------------
-function TileLayer:_addRedraw(tx,ty)
-	self._redraw[tx*offset + ty] = true
-	
-	local map    = self.map
-	local tile   = self(tx,ty)
-	local tileset= tile.tileset
-	
-	if not self._batches[tileset] then
-		local size= map.width * map.height
-		batch     = love.graphics.newSpriteBatch(tile.image,size)
-		self._batches[tileset] = batch
-		
-		batch:bind()
-		for i = 1,size do
-			batch[addQuad](batch,tile.quad,0,0,0,0)
-		end
-		batch:unbind()
-	end
 end
 ---------------------------------------------------------------------------------------------------
 return TileLayer
