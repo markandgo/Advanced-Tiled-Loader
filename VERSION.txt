@@ -2,6 +2,11 @@ Advanced Tiled Loader
 --------------------------------------------------------------------------------------
 
 CHANGES:
+0.1.4F (2013/8/5)
+- Added support for Tiled 0.9 staggered orientation
+- Changed handling of TileLayer batch id's to be reliable
+- Removed serialize module and other small stuff
+
 0.1.3F (2013/8/4)
 - Added TileLayer:_addRedraw
 - Removed TileLayer:redrawTile

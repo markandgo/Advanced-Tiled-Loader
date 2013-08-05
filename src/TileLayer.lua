@@ -10,8 +10,8 @@ if love.graphics.newGeometry then
 	addQuad = 'add'
 	setQuad = 'set'
 end
-local dummy_image     = love.graphics.newImage( love.image.newImageData(1,1) )
-local batch_id_offset = love.graphics.newSpriteBatch(dummy_image,1):add(0,0,0,0)
+
+local bitoffset = 2^16
 
 ---------------------------------------------------------------------------------------------------
 function TileLayer:new(args)
@@ -32,18 +32,18 @@ function TileLayer:new(args)
 		cells     = {},
 		_gridflip = Grid:new(),
 		
-		_batches  = {},
+		_batches  = {}, -- indexed by tileset
+		_batchid  = {}, -- indexed by batch then coordinates (ty has 16 bits)
 		_redraw   = {}, -- coords of tiles to be redrawn (ty has 16 bits)
 	}
 	return setmetatable(tilelayer,TileLayer)
 end
 ---------------------------------------------------------------------------------------------------
 -- store y coordinate as 16 bits for redraw
-local offset = 2^16
 function TileLayer:setTile(tx,ty,tile,flipbits)
 	self:set(tx,ty,tile)
 	if flipbits then self._gridflip:set(tx,ty,flipbits) end
-	self._redraw[tx*offset + ty] = true
+	self._redraw[tx*bitoffset + ty] = true
 end
 ---------------------------------------------------------------------------------------------------
 -- nil for unchange, true to flip
@@ -60,7 +60,7 @@ function TileLayer:flipTile(tx,ty, flipX,flipY)
 	end
 	
 	self._gridflip:set(tx,ty, flip)
-	self._redraw[tx*offset + ty] = true
+	self._redraw[tx*bitoffset + ty] = true
 end
 ---------------------------------------------------------------------------------------------------
 -- rotate 90 degrees
@@ -79,7 +79,7 @@ function TileLayer:rotateTile(tx,ty)
 	end
 	
 	self._gridflip:set(tx,ty, flip)
-	self._redraw[tx*offset + ty] = true
+	self._redraw[tx*bitoffset + ty] = true
 end
 ---------------------------------------------------------------------------------------------------
 function TileLayer:draw(x,y)
@@ -97,8 +97,8 @@ function TileLayer:draw(x,y)
 		
 		for coord in pairs(self._redraw) do
 		
-			local ty = coord % offset
-			local tx = (coord - ty) / offset
+			local ty = coord % bitoffset
+			local tx = (coord - ty) / bitoffset
 			
 			local tile   = self(tx,ty)
 			local batch  = self._batches[tile.tileset]
@@ -106,18 +106,24 @@ function TileLayer:draw(x,y)
 			
 			-- make batch if it doesn't exist
 			if not self._batches[tileset] then
-				local size= map.width * map.height
-				batch     = love.graphics.newSpriteBatch(tile.image,size)
+				local size   = map.width * map.height
+				batch        = love.graphics.newSpriteBatch(tile.image,size)
+				local batchid= {}
+				
 				self._batches[tileset] = batch
+				self._batchid[batch]   = batchid
 				
 				batch:bind()
-				for i = 1,size do
-					batch[addQuad](batch,tile.quad,0,0,0,0)
+				for ty = 0,map.height-1 do
+					for tx = 0,map.width-1 do
+						batchid[ tx*bitoffset + ty ] = 
+							batch[addQuad](batch,tile.quad,0,0,0,0)
+					end
 				end
 			end
 			
 			local qw,qh  = tileset.tilewidth , tileset.tileheight
-			local id     = (ty * map.width) + tx + batch_id_offset
+			local id     = self._batchid[batch][coord]
 				
 			local flipbits= self._gridflip:get(tx,ty) or 0
 			local flipX   = math.floor(flipbits / 4) == 1       
@@ -158,10 +164,14 @@ function TileLayer:draw(x,y)
 				-- apex of tile (0,0) is point (0,0)
 				x   = x - (map.tilewidth/2)
 			elseif map.orientation == 'staggered' then
-			
+				local y_is_odd= ty % 2 ~= 0
+				local xoffset = (y_is_odd and map.tilewidth*0.5 or 0)
+				x             = tx * map.tilewidth + xoffset
+				y             = ty * map.tileheight*0.5
 			end
+			
 			batch[setQuad](batch, id, tile.quad, x+dx,y+dy, angle, sx,sy, ox,oy)
-			self._redraw[tx*offset + ty] = nil
+			self._redraw[coord] = nil
 			
 		end
 		
