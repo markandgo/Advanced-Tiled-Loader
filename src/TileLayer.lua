@@ -11,6 +11,7 @@ if love.graphics.newGeometry then
 	setQuad = 'set'
 end
 
+local dummy_quad= love.graphics.newQuad(0,0,1,1,1,1)
 local bitoffset = 2^16
 
 ---------------------------------------------------------------------------------------------------
@@ -24,10 +25,10 @@ function TileLayer:new(args)
 		visible   = (a.visible == nil and true) or a.visible,
 		properties= a.properties or {},
 		
-		parallaxX = a.parallaxX or 1,
-		parallaxY = a.parallaxY or 1,
-		offsetX   = a.offsetX or 0,
-		offsetY   = a.offsetY or 0,
+		parallaxX = a.parallaxX or 1, -- scale x argument for layer:draw(x,y)
+		parallaxY = a.parallaxY or 1, -- scale y argument for layer:draw(x,y)
+		offsetX   = a.offsetX or 0,   -- x offset is added to x position
+		offsetY   = a.offsetY or 0,   -- y offset is added to y position
 		
 		cells     = {},
 		_gridflip = Grid:new(),
@@ -40,6 +41,7 @@ function TileLayer:new(args)
 end
 ---------------------------------------------------------------------------------------------------
 -- store y coordinate as 16 bits for redraw
+-- passing nil clears a tile
 function TileLayer:setTile(tx,ty,tile,flipbits)
 	self:set(tx,ty,tile)
 	if flipbits then self._gridflip:set(tx,ty,flipbits) end
@@ -101,76 +103,89 @@ function TileLayer:draw(x,y)
 			local tx = (coord - ty) / bitoffset
 			
 			local tile   = self(tx,ty)
-			local batch  = self._batches[tile.tileset]
-			local tileset= tile.tileset
 			
-			-- make batch if it doesn't exist
-			if not self._batches[tileset] then
-				local size   = map.width * map.height
-				batch        = love.graphics.newSpriteBatch(tile.image,size)
-				local batchid= {}
+			-- blank out the tile at the given coordinates
+			if not tile then
+			
+				for tileset,batch in pairs(self._batches) do
+					batch[setQuad](batch, self._batchid[batch][coord], dummy_quad, 0,0,0,0)
+				end
 				
-				self._batches[tileset] = batch
-				self._batchid[batch]   = batchid
+			else
+			
+				local batch  = self._batches[tile.tileset]
+				local tileset= tile.tileset
 				
-				batch:bind()
-				for ty = 0,map.height-1 do
-					for tx = 0,map.width-1 do
-						batchid[ tx*bitoffset + ty ] = 
-							batch[addQuad](batch,tile.quad,0,0,0,0)
+				-- make batch if it doesn't exist
+				if not self._batches[tileset] then
+					local size   = map.width * map.height
+					batch        = love.graphics.newSpriteBatch(tile.image,size)
+					local batchid= {}
+					
+					self._batches[tileset] = batch
+					self._batchid[batch]   = batchid
+					
+					batch:bind()
+					for ty = 0,map.height-1 do
+						for tx = 0,map.width-1 do
+							batchid[ tx*bitoffset + ty ] = 
+								batch[addQuad](batch,tile.quad,0,0,0,0)
+						end
 					end
 				end
-			end
-			
-			local qw,qh  = tileset.tilewidth , tileset.tileheight
-			local id     = self._batchid[batch][coord]
 				
-			local flipbits= self._gridflip:get(tx,ty) or 0
-			local flipX   = math.floor(flipbits / 4) == 1       
-			local flipY   = math.floor( (flipbits % 4) / 2) == 1
-			local flipDiag= flipbits % 2 == 1
-			
-			local x,y
-			
-			-- offsets to rotate about center
-			local ox,oy = qw/2,qh/2
-			
-			-- offsets to align to top left again
-			local dx,dy = ox,oy
-			
-			local sx,sy = flipX and -1 or 1, flipY and -1 or 1
-			local angle = 0
-			if flipDiag then
-				angle = math.pi/2
-				sx,sy = sy, sx*-1
+				local qw,qh  = tileset.tilewidth , tileset.tileheight
+				local id     = self._batchid[batch][coord]
+					
+				local flipbits= self._gridflip:get(tx,ty) or 0
+				local flipX   = math.floor(flipbits / 4) == 1       
+				local flipY   = math.floor( (flipbits % 4) / 2) == 1
+				local flipDiag= flipbits % 2 == 1
 				
-				-- rotated tile has switched dimensions
-				dx,dy = dy,dx
+				local x,y
 				
-				-- extra offset to align to bottom like Tiled
-				dy    = dy - (qw - map.tileheight)
-			else
-				dy    = dy - (qh - map.tileheight)
-			end
+				-- offsets to rotate about center
+				local ox,oy = qw/2,qh/2
+				
+				-- offsets to align to top left again
+				local dx,dy = ox,oy
+				
+				local sx,sy = flipX and -1 or 1, flipY and -1 or 1
+				local angle = 0
+				if flipDiag then
+					angle = math.pi/2
+					sx,sy = sy, sx*-1
+					
+					-- rotated tile has switched dimensions
+					dx,dy = dy,dx
+					
+					-- extra offset to align to bottom like Tiled
+					dy    = dy - (qw - map.tileheight)
+				else
+					dy    = dy - (qh - map.tileheight)
+				end
+				
+				if map.orientation == 'orthogonal' then
 			
-			if map.orientation == 'orthogonal' then
-		
-				x,y   = tx * map.tilewidth,
-						  ty * map.tileheight
+					x,y   = tx * map.tilewidth,
+							  ty * map.tileheight
+					
+				elseif map.orientation == 'isometric' then
+					x,y = map:fromIso(tx,ty)
+					
+					-- apex of tile (0,0) is point (0,0)
+					x   = x - (map.tilewidth/2)
+				elseif map.orientation == 'staggered' then
+					local y_is_odd= ty % 2 ~= 0
+					local xoffset = (y_is_odd and map.tilewidth*0.5 or 0)
+					x             = tx * map.tilewidth + xoffset
+					y             = ty * map.tileheight*0.5
+				end
 				
-			elseif map.orientation == 'isometric' then
-				x,y = map:fromIso(tx,ty)
+				batch[setQuad](batch, id, tile.quad, x+dx,y+dy, angle, sx,sy, ox,oy)
 				
-				-- apex of tile (0,0) is point (0,0)
-				x   = x - (map.tilewidth/2)
-			elseif map.orientation == 'staggered' then
-				local y_is_odd= ty % 2 ~= 0
-				local xoffset = (y_is_odd and map.tilewidth*0.5 or 0)
-				x             = tx * map.tilewidth + xoffset
-				y             = ty * map.tileheight*0.5
-			end
+			end	
 			
-			batch[setQuad](batch, id, tile.quad, x+dx,y+dy, angle, sx,sy, ox,oy)
 			self._redraw[coord] = nil
 			
 		end
