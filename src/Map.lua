@@ -97,7 +97,7 @@ end
 function Map:toIso(x,y)
 	local tw,th= self.tilewidth,self.tileheight
 	-- matrix inverse
-	local a,b,c,d = tw/2,tw/2,th/2,th/2
+	local a,b,c,d = tw/2,-tw/2,th/2,th/2
 	local det     = 1/(a*d-b*c)
 	local ix,iy   = det * (d * x - b * y), det * (-c * x + a * y)
 	return ix,iy
