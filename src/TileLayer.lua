@@ -40,6 +40,14 @@ function TileLayer:new(args)
 	return setmetatable(tilelayer,TileLayer)
 end
 ---------------------------------------------------------------------------------------------------
+function TileLayer:clear()
+	self.cells    = {}
+	self._gridflip= {}
+	self._batches = {}
+	self._batchid = {}
+	self._redraw  = {}
+end
+---------------------------------------------------------------------------------------------------
 -- store y coordinate as 16 bits for redraw
 -- passing nil clears a tile
 function TileLayer:setTile(tx,ty,tile,flipbits)
