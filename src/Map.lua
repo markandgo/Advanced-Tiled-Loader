@@ -87,20 +87,18 @@ end
 -- The unit length of a tile on both axes is 1. 
 -- Point (0,0) is the apex of tile (0,0).
 function Map:fromIso(ix,iy)
-	local tw,th= self.tilewidth,self.tileheight
-	local x    = ix*tw/2 - iy*tw/2
-	local y    = ix*th/2 + iy*th/2
-	return x,y
+	local hw,hh = self.tilewidth/2,self.tileheight/2
+	return hw*(ix - iy),hh*(ix + iy)
 end
 ---------------------------------------------------------------------------------------------------
 -- Point (0,0) is always at the apex of tile (0,0) pre-parallax.
 function Map:toIso(x,y)
-	local tw,th= self.tilewidth,self.tileheight
+	local hw,hh   = self.tilewidth/2,self.tileheight/2
 	-- matrix inverse
-	local a,b,c,d = tw/2,-tw/2,th/2,th/2
+	local a,b,c,d = hw,-hw,hh,hh
 	local det     = 1/(a*d-b*c)
-	local ix,iy   = det * (d * x - b * y), det * (-c * x + a * y)
-	return ix,iy
+	
+	return det * (d * x - b * y), det * (-c * x + a * y)
 end
 ---------------------------------------------------------------------------------------------------
 function Map:callback(cb_name, ...)
