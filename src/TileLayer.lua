@@ -9,8 +9,9 @@ if love.graphics.newGeometry then
 	addQuad = 'add'
 end
 
-local bitoffset = 2^16
-local floor = math.floor
+local bitoffset= 2^16
+local floor    = math.floor
+local min,max  = math.min,math.max
 
 ---------------------------------------------------------------------------------------------------
 function TileLayer:new(args)
@@ -123,6 +124,12 @@ function TileLayer:draw()
 				local gx,gy,gx2,gy2 = floor( vx / tw ), floor( vy / th ),
 					floor( vx2 / tw ), floor( vy2 / th )
 				
+				gx,gy,gx2,gy2 = 
+					max(0,gx),
+					max(0,gy),
+					min(gx2,map.width),
+					min(gy2,map.height)
+				
 				tile_iterator = self:rectangle(gx,gy,gx2,gy2, true)
 			
 			elseif map.orientation == 'isometric' then
@@ -132,6 +139,12 @@ function TileLayer:draw()
 			elseif map.orientation == 'staggered' then
 				local gx,gy,gx2,gy2 = floor( vx / tw ), floor( vy / th ) * 2,
 					floor( vx2 / tw ), floor( vy2 / th ) * 2
+				
+				gx,gy,gx2,gy2 = 
+					max(0,gx),
+					max(0,gy),
+					min(gx2,map.width),
+					min(gy2,map.height)
 				
 				tile_iterator = self:rectangle(gx,gy, gx2,gy2, true)
 			end
@@ -223,10 +236,23 @@ end
 ---------------------------------------------------------------------------------------------------
 function TileLayer:isoRectangle(vx,vy,vx2,vy2)
 	local map    = self.map
+	local mw,mh  = map.width,map.height
+	
+	local _,top= map:fromIso(0,0)
+	local _,bot= map:fromIso(mw,mh)
+	local left = map:fromIso(0,mh)
+	local right= map:fromIso(mw,0)
+	
+	vx,vy,vx2,vy2 = 
+		max(left,vx),
+		max(top,vy),
+		min(vx2,right),
+		min(vy2,bot)
+	
 	local ix,iy  = map:toIso(vx,vy)
 	local ix2,iy2= map:toIso(vx2,vy2)
 	ix,iy,ix2,iy2= floor(ix),floor(iy),floor(ix2),floor(iy2)	
-		
+	
 	-- convert to staggered
 	local x,y  = map:isoToStag(ix,iy)
 	local x2,y2= map:isoToStag(ix2,iy2)
