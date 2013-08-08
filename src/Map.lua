@@ -154,4 +154,20 @@ function Map:setDrawRange(x,y,x2,y2)
 	end
 end
 ---------------------------------------------------------------------------------------------------
+local getWindow = love.graphics.getMode or love.window.getMode
+function Map:autoDrawRange(tx,ty, scale, padding)
+	local w,h     = getWindow()
+	tx,ty         = -(tx or 0),-(ty or 0)
+	scale,padding = scale or 1, padding or 30
+	
+	local incr    = 1/scale
+	padding       = padding * incr
+	
+	self:setDrawRange(
+		tx - padding,
+		ty - padding,
+		tx + w * incr + padding,
+		ty + h * incr + padding)
+end
+---------------------------------------------------------------------------------------------------
 return Map
