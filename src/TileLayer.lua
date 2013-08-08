@@ -88,19 +88,19 @@ function TileLayer:rotateTile(tx,ty)
 	self._redraw = true
 end
 ---------------------------------------------------------------------------------------------------
-function TileLayer:draw(x,y, ox,oy)
+function TileLayer:draw()
 	if not self.visible then return end
 	
 	local map = self.map
-	local unbind
+	local unbind,ox,oy,x,y
 	
 	-- origin offset
-	ox = (ox or 0) * self.parallaxX - self.offsetX
-	oy = (oy or 0) * self.parallaxY - self.offsetY
+	ox = map.ox * self.parallaxX - self.offsetX
+	oy = map.oy * self.parallaxY - self.offsetY
 	
 	-- draw location
-	x = (x or 0)
-	y = (y or 0)
+	x = map.x
+	y = map.y
 	
 	local r,g,b,a = love.graphics.getColor()
 	love.graphics.setColor(r,g,b,self.opacity*255)

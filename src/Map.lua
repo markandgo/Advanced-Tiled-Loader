@@ -24,6 +24,11 @@ function Map:new(args)
 		tiles      = a.tiles or {}, -- indexed by gid
 		drawrange  = a.drawrange or nil, -- {x,y,x2,y2} no drawrange means draw everything
 		
+		x          = a.x or 0, -- draw location
+		y          = a.y or 0,
+		ox         = a.ox or 0, -- origin offset
+		oy         = a.oy or 0,
+		
 		properties = a.properties or {},
 		
 	},Map)
@@ -136,8 +141,8 @@ function Map:callback(cb_name, ...)
 	end
 end
 ---------------------------------------------------------------------------------------------------
-function Map:draw(x,y, ox,oy)
-	self:callback('draw', x,y, ox,oy)
+function Map:draw()
+	self:callback('draw')
 end
 ---------------------------------------------------------------------------------------------------
 function Map:setDrawRange(x,y,x2,y2)

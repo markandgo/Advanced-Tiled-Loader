@@ -46,11 +46,11 @@ end
 -- Draws the object layer. The way the objects are drawn depends on the map orientation and
 -- if the object has an associated tile. It tries to draw the objects as closely to the way
 -- Tiled does it as possible.
-function ObjectLayer:draw(x,y)
+function ObjectLayer:draw()
 	if not self.visible then return end
 
-	x = (x or 0) * self.parallaxX + self.offsetX
-	y = (y or 0) * self.parallaxY + self.offsetY
+	local map = self.map
+	local x,y = map.x + self.offsetX - map.ox, map.y + self.offsetY - map.oy
 	
 	love.graphics.push()
 	love.graphics.translate(x,y)
