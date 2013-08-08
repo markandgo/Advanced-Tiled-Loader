@@ -88,14 +88,20 @@ function TileLayer:rotateTile(tx,ty)
 	self._redraw = true
 end
 ---------------------------------------------------------------------------------------------------
-function TileLayer:draw(x,y)
+function TileLayer:draw(x,y, ox,oy)
 	if not self.visible then return end
 	
 	local map = self.map
 	local unbind
 	
-	x = (x or 0) * self.parallaxX + self.offsetX
-	y = (y or 0) * self.parallaxY + self.offsetY
+	-- origin offset
+	ox = (ox or 0) * self.parallaxX - self.offsetX
+	oy = (oy or 0) * self.parallaxY - self.offsetY
+	
+	-- draw location
+	x = (x or 0)
+	y = (y or 0)
+	
 	local r,g,b,a = love.graphics.getColor()
 	love.graphics.setColor(r,g,b,self.opacity*255)
 	
@@ -110,8 +116,8 @@ function TileLayer:draw(x,y)
 		if map.drawrange then
 			local vx,vy,vx2,vy2 = unpack(map.drawrange)
 			-- apply drawing offsets
-			vx,vy  = vx - x, vy - y
-			vx2,vy2= vx2 - x, vy2 -y
+			vx,vy  = vx + ox, vy + oy
+			vx2,vy2= vx2 + ox, vy2 + oy
 			
 			if map.orientation == 'orthogonal' then
 				local gx,gy,gx2,gy2 = floor( vx / tw ), floor( vy / th ),
@@ -206,11 +212,11 @@ function TileLayer:draw(x,y)
 
 	end
 			
-		
+	x,y = x-ox, y-oy
 	for tileset,batch in pairs(self._batches) do
 		if unbind then batch:unbind() end
 	
-		love.graphics.draw(batch, x+tileset.offsetX, y+tileset.offsetY)
+		love.graphics.draw(batch, x+tileset.offsetX,y+tileset.offsetY)
 	end
 	love.graphics.setColor(r,g,b,a)
 end

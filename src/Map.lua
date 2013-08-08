@@ -136,8 +136,8 @@ function Map:callback(cb_name, ...)
 	end
 end
 ---------------------------------------------------------------------------------------------------
-function Map:draw(x,y)
-	self:callback('draw', x,y)
+function Map:draw(x,y, ox,oy)
+	self:callback('draw', x,y, ox,oy)
 end
 ---------------------------------------------------------------------------------------------------
 function Map:setDrawRange(x,y,x2,y2)
