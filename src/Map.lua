@@ -22,6 +22,7 @@ function Map:new(args)
 		tilesets   = a.tilesets or {}, -- indexed by name
 		layerOrder = a.layerOrder or {}, -- indexed by draw order
 		tiles      = a.tiles or {}, -- indexed by gid
+		drawrange  = a.drawrange or nil, -- {x,y,x2,y2} no drawrange means draw everything
 		
 		properties = a.properties or {},
 		
@@ -103,6 +104,32 @@ function Map:toIso(x,y)
 	return ix,iy
 end
 ---------------------------------------------------------------------------------------------------
+function Map:isoToStag(ix,iy)
+	-- check which grid (even/odd) the tile is on
+	
+	local delta  = ix - iy
+	-- offset for even/odd grid
+	local offset = (delta) % 2
+	
+	local tx = (delta - offset) / 2
+	-- the sum is the y coordinate
+	local ty = ix + iy
+	
+	return tx,ty
+end
+---------------------------------------------------------------------------------------------------
+function Map:stagToIso(x,y)
+	-- offset for odd grid
+	local offset = y % 2
+	
+	-- every two tile going down increases x by 1
+	-- every tile going right increases x by 1
+	local tx,ty = ( offset + y ) / 2 + x,
+		( -offset + y ) / 2 - x
+	
+	return tx,ty
+end
+---------------------------------------------------------------------------------------------------
 function Map:callback(cb_name, ...)
 	local order = self.layerOrder
 	for i=1,#order do
@@ -113,6 +140,15 @@ end
 ---------------------------------------------------------------------------------------------------
 function Map:draw(x,y)
 	self:callback('draw', x,y)
+end
+---------------------------------------------------------------------------------------------------
+function Map:setDrawRange(x,y,x2,y2)
+	local v = self.drawrange or {0,0,0,0}
+	v[1],v[2],v[3],v[4] = x,y,x2,y2
+	self.drawrange = x and v
+	for i,layer in ipairs(self.layerOrder) do
+		layer._redraw = true
+	end
 end
 ---------------------------------------------------------------------------------------------------
 return Map
