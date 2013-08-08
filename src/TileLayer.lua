@@ -42,7 +42,6 @@ function TileLayer:clear()
 	self._gridflip= {}
 	self._batches = {}
 	self._batchid = {}
-	self._redraw  = {}
 end
 ---------------------------------------------------------------------------------------------------
 -- store y coordinate as 16 bits for redraw
