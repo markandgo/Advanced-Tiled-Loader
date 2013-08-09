@@ -26,7 +26,7 @@ function Map:new(args)
 		
 		x          = a.x or 0, -- draw location
 		y          = a.y or 0,
-		ox         = a.ox or 0, -- origin offset
+		ox         = a.ox or 0, -- origin offset, affects parallax
 		oy         = a.oy or 0,
 		
 		properties = a.properties or {},
@@ -107,6 +107,7 @@ function Map:toIso(x,y)
 	return det * (d * x - b * y), det * (-c * x + a * y)
 end
 ---------------------------------------------------------------------------------------------------
+-- tile (0,0) is the same for both orientation
 function Map:isoToStag(ix,iy)
 	-- check which grid (even/odd) the tile is on
 	
@@ -154,20 +155,22 @@ function Map:setDrawRange(x,y,x2,y2)
 	end
 end
 ---------------------------------------------------------------------------------------------------
+-- dx,dy is the map translation from its origin (in local coordinates)
+-- scale: scale of map
 local getWindow = love.graphics.getMode or love.window.getMode
-function Map:autoDrawRange(tx,ty, scale, padding)
-	local w,h     = getWindow()
-	tx,ty         = -(tx or 0),-(ty or 0)
-	scale,padding = scale or 1, padding or 30
-	
-	local incr    = 1/scale
-	padding       = padding * incr
+function Map:autoDrawRange(dx,dy, scale, padding)
+	local w,h    = getWindow()
+	dx,dy        = -(dx or 0),-(dy or 0)
+	scale,padding= scale or 1, padding or 30
+	-- bigger scale --> make things smaller
+	scale        = 1/scale
+	padding      = padding * scale
 	
 	self:setDrawRange(
-		tx - padding,
-		ty - padding,
-		tx + w * incr + padding,
-		ty + h * incr + padding)
+		dx - padding,
+		dy - padding,
+		dx + w * scale + padding,
+		dy + h * scale + padding)
 end
 ---------------------------------------------------------------------------------------------------
 return Map
