@@ -213,8 +213,8 @@ function TileLayer:draw()
 				-- apex of tile (0,0) is point (0,0)
 				x   = x - (map.tilewidth/2)
 			elseif map.orientation == 'staggered' then
-				local y_is_odd= ty % 2 ~= 0
-				local xoffset = (y_is_odd and map.tilewidth*0.5 or 0)
+				local offset  = ty % 2
+				local xoffset = (offset*0.5*map.tilewidth)
 				x             = tx * map.tilewidth + xoffset
 				y             = ty * map.tileheight*0.5
 			end
@@ -235,38 +235,56 @@ function TileLayer:draw()
 end
 ---------------------------------------------------------------------------------------------------
 function TileLayer:isoRectangle(vx,vy,vx2,vy2)
+
 	local map    = self.map
 	local mw,mh  = map.width,map.height
 	
-	local _,top= map:fromIso(0,0)
-	local _,bot= map:fromIso(mw,mh)
-	local left = map:fromIso(0,mh)
-	local right= map:fromIso(mw,0)
-	
-	vx,vy,vx2,vy2 = 
-		max(left,vx),
-		max(top,vy),
-		min(vx2,right),
-		min(vy2,bot)
-	
 	local ix,iy  = map:toIso(vx,vy)
 	local ix2,iy2= map:toIso(vx2,vy2)
+	
 	ix,iy,ix2,iy2= floor(ix),floor(iy),floor(ix2),floor(iy2)	
 	
-	-- convert to staggered
-	local x,y  = map:isoToStag(ix,iy)
-	local x2,y2= map:isoToStag(ix2,iy2)
+	-- all tiles on the same row have equal sums (x+y)
+	-- all tiles on the same column have equal diff (x-y)
+	local x1 = 0-(mh-1)
+	local x2 = -x1
+	local y1 = 0
+	local y2 = (mw+mh)-2
+	
+	x1,y1,x2,y2 =
+		max(x1,ix-iy),
+		max(y1,ix+iy),
+		min(x2,ix2-iy2),
+		min(y2,ix2+iy2)
 
-	local xi,yi = x-1,y
+	-- odd grid, x must be an odd integer
+	local offset = y1 % 2
+	x1 = x1 - (x1 % 2) + offset
+		
+	local xi,yi = x1-2,y1
+		
 	return function()
 		while true do
-			xi = xi+1
-			if xi > x2 then yi = yi + 1; xi = x end
+			-- count by 2 on horizontal axis
+			xi = xi+2
+			if xi > x2 then 
+				yi = yi + 1; xi = x1 
+				
+				local offset = yi % 2
+				xi = xi - (xi % 2) + offset
+			end
 			if yi > y2 then return end
-			local ix,iy = map:stagToIso(xi,yi)
-			local tile = Grid.get(self,ix,iy)
+-- http://gamedev.stackexchange.com/questions/25896/how-do-i-find-which-isometric-tiles-are-inside-the-cameras-current-view
+
+			-- equation obtained from solving
+			-- y = tx + ty
+			-- x = tx - ty
+			local tx,ty = (yi  + xi)*0.5,
+				(yi  - xi)*0.5
+			
+			local tile = Grid.get(self,tx,ty)
 			if tile then
-				return ix,iy,tile
+				return tx,ty,tile
 			end
 		end
 	end

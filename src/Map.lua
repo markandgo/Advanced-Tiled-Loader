@@ -107,33 +107,6 @@ function Map:toIso(x,y)
 	return det * (d * x - b * y), det * (-c * x + a * y)
 end
 ---------------------------------------------------------------------------------------------------
--- tile (0,0) is the same for both orientation
-function Map:isoToStag(ix,iy)
-	-- check which grid (even/odd) the tile is on
-	
-	local delta  = ix - iy
-	-- offset for even/odd grid
-	local offset = (delta) % 2
-	
-	local tx = (delta - offset) / 2
-	-- the sum is the y coordinate
-	local ty = ix + iy
-	
-	return tx,ty
-end
----------------------------------------------------------------------------------------------------
-function Map:stagToIso(x,y)
-	-- offset for odd grid
-	local offset = y % 2
-	
-	-- every two tile going down increases x by 1
-	-- every tile going right increases x by 1
-	local tx,ty = ( offset + y ) / 2 + x,
-		( -offset + y ) / 2 - x
-	
-	return tx,ty
-end
----------------------------------------------------------------------------------------------------
 function Map:callback(cb_name, ...)
 	local order = self.layerOrder
 	for i=1,#order do
