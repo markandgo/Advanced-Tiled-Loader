@@ -65,7 +65,7 @@ function ObjectLayer:draw(x,y)
 	
 	for _,object in ipairs(self.objects) do
 		if object.gid then
-			love.graphics.setColor(255,255,255,new_a)
+			love.graphics.setColor(r,g,b,new_a)
 			object:draw()
 			love.graphics.setColor(color[1],color[2],color[3],new_a)
 		else
