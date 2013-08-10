@@ -104,7 +104,7 @@ function TileLayer:draw()
 	y = map.y
 	
 	local r,g,b,a = love.graphics.getColor()
-	love.graphics.setColor(r,g,b,self.opacity*255)
+	love.graphics.setColor(r,g,b,self.opacity*a)
 	
 	if self._redraw then
 	
