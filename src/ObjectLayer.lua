@@ -49,8 +49,13 @@ end
 function ObjectLayer:draw()
 	if not self.visible then return end
 
-	local map = self.map
-	local x,y = map.x + self.offsetX - map.ox, map.y + self.offsetY - map.oy
+	local map= self.map
+	
+	-- origin offset
+	local ox = map.ox * self.parallaxX - self.offsetX
+	local oy = map.oy * self.parallaxY - self.offsetY
+	
+	local x,y= map.x - ox, map.y - oy
 	
 	love.graphics.push()
 	love.graphics.translate(x,y)
