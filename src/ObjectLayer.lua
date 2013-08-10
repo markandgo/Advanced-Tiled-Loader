@@ -60,13 +60,14 @@ function ObjectLayer:draw(x,y)
 	
 	local r,g,b,a = love.graphics.getColor()
 	local color   = self.color
-	love.graphics.setColor(color[1],color[2],color[3],self.opacity*255)
+	local new_a   = self.opacity*a
+	love.graphics.setColor(color[1],color[2],color[3],new_a)
 	
 	for _,object in ipairs(self.objects) do
 		if object.gid then
-			love.graphics.setColor(255,255,255,a)
+			love.graphics.setColor(255,255,255,new_a)
 			object:draw()
-			love.graphics.setColor(color[1],color[2],color[3],self.opacity*255)
+			love.graphics.setColor(color[1],color[2],color[3],new_a)
 		else
 			object:draw()
 		end

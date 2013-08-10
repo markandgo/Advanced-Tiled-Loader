@@ -203,7 +203,7 @@ function TileLayer:draw(x,y)
 	x = (x or 0) * self.parallaxX + self.offsetX
 	y = (y or 0) * self.parallaxY + self.offsetY
 	local r,g,b,a = love.graphics.getColor()
-	love.graphics.setColor(r,g,b,self.opacity*255)
+	love.graphics.setColor(r,g,b,self.opacity*a)
 	for tileset,batch in pairs(self._batches) do
 		if unbind then batch:unbind() end
 	
