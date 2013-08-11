@@ -27,6 +27,8 @@ function ObjectLayer:new(args)
 		offsetY    = a.offsetY or 0,
 		
 		objects    = {},
+		_drawlist  = {},
+		_redraw    = true,
       
    }, ObjectLayer)
     
@@ -37,8 +39,9 @@ end
 -- Creates a new object, automatically inserts it into the layer, and then returns it
 function ObjectLayer:newObject(args, position)
 	args.layer   = self
-	local object= Object:new(args)
+	local object = Object:new(args)
    table.insert(self.objects, position or #self.objects+1, object) 
+   self._redraw = true
    return object
 end
 
@@ -48,14 +51,35 @@ end
 -- Tiled does it as possible.
 function ObjectLayer:draw()
 	if not self.visible then return end
-
+		
 	local map= self.map
 	
 	-- origin offset
 	local ox = map.ox * self.parallaxX - self.offsetX
 	local oy = map.oy * self.parallaxY - self.offsetY
-	
 	local x,y= map.x - ox, map.y - oy
+	
+	if self._redraw then
+		self._redraw = false
+		
+		local add_all = not map._drawrange
+		local vx,vy,vx2,vy2
+		if map._drawrange then
+			vx,vy,vx2,vy2 = unpack(map._drawrange)
+			vx,vy  = vx + ox, vy + oy
+			vx2,vy2= vx2 + ox, vy2 + oy
+		end	
+		
+		local new_drawlist = {}
+		for i,object in ipairs(self.objects) do
+			local x,y,x2,y2 = unpack(object._bbox)
+			
+			if add_all or (vx < x2 and vx2 > x and vy < y2 and vy2 > y) then
+				table.insert(new_drawlist,object)
+			end
+		end
+		self._drawlist = new_drawlist
+	end
 	
 	love.graphics.push()
 	love.graphics.translate(x,y)
@@ -68,7 +92,7 @@ function ObjectLayer:draw()
 	local new_a   = self.opacity*a
 	love.graphics.setColor(color[1],color[2],color[3],new_a)
 	
-	for _,object in ipairs(self.objects) do
+	for _,object in ipairs(self._drawlist) do
 		if object.gid then
 			love.graphics.setColor(r,g,b,new_a)
 			object:draw()

@@ -383,7 +383,7 @@ function Loader._expandObjectGroup(tmxlayer,tmxmap,map)
 			
 			local e = element
 			
-			local object = layer:newObject{
+			local args = {
 				name      = e.name,
 				type      = e.type,
 				gid       = e.gid,
@@ -401,7 +401,7 @@ function Loader._expandObjectGroup(tmxlayer,tmxmap,map)
 			for i,sub in ipairs(e) do
 				local etype = sub[elementkey]
 				if etype == 'properties' then
-					object.properties = Loader._expandProperties(sub)
+					args.properties = Loader._expandProperties(sub)
 				end
 				if etype == 'polygon' or etype == 'polyline' then
 					local points = sub.points
@@ -409,12 +409,14 @@ function Loader._expandObjectGroup(tmxlayer,tmxmap,map)
 					for num in points:gmatch '-?%d+' do
 						table.insert(t,tonumber(num))
 					end
-					object[etype] = t
+					args[etype] = t
 				end
 				if etype == 'ellipse' then
-					object.ellipse = true
+					args.ellipse = true
 				end
 			end
+			
+			layer:newObject(args)
 			
 		elseif etype == 'properties' then
 			layer.properties = Loader._expandProperties(element)
