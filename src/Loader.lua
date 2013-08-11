@@ -96,9 +96,9 @@ local Loader = {
 -- should return map else error as second message
 
 function Loader.load(filename)
-	local ok,tmxmap = pcall(function()
+	local ok,tmxmap = xpcall(function()
 		return Loader._expandMap( Loader.parseXML(filename) )
-	end)
+	end,debug.traceback)
 	if not ok then return nil,tmxmap end
 	return tmxmap
 end
@@ -106,10 +106,10 @@ end
 -- should return true if successful else error as second message
 
 function Loader.save(map,filename)
-	return pcall(function()
+	return xpcall(function()
 		local tmxmap = Loader._compactMap(map)
 		Loader._saveAsXML(tmxmap,filename)
-	end)
+	end,debug.traceback)
 end
 ---------------------------------------------------------------------------------------------------
 function Loader.parseXML(filename)
