@@ -24,7 +24,6 @@ function Map:new(args)
 		tilesets   = a.tilesets or {}, -- indexed by name
 		layerOrder = a.layerOrder or {}, -- indexed by draw order
 		tiles      = a.tiles or {}, -- indexed by gid
-		drawrange  = a.drawrange or nil, -- {x,y,x2,y2} no drawrange means draw everything
 		
 		x          = a.x or 0, -- draw location
 		y          = a.y or 0,
@@ -32,6 +31,7 @@ function Map:new(args)
 		oy         = a.oy or 0,
 		
 		properties = a.properties or {},
+		__drawrange= nil, -- {x,y,x2,y2} no drawrange means draw everything
 		
 	},Map)
 end
@@ -124,13 +124,13 @@ end
 function Map:setDrawRange(x,y,x2,y2)
 	-- draw everything
 	if not (x and y and x2 and y2) then
-		if not self.drawrange then return end
-		self.drawrange = nil
+		if not self._drawrange then return end
+		self._drawrange = nil
 	else
 		local tw,th = self.tilewidth,self.tileheight
 	
-		local dr      = self.drawrange or {0,0,0,0}
-		self.drawrange= dr
+		local dr       = self._drawrange or {0,0,0,0}
+		self._drawrange= dr
 		
 		local dx,dy,dx2,dy2    = dr[1],dr[2],dr[3],dr[4]
 		dr[1],dr[2],dr[3],dr[4]= x,y,x2,y2

@@ -114,8 +114,8 @@ function TileLayer:draw()
 		
 		local tile_iterator
 		
-		if map.drawrange then
-			local vx,vy,vx2,vy2 = unpack(map.drawrange)
+		if map._drawrange then
+			local vx,vy,vx2,vy2 = unpack(map._drawrange)
 			-- apply drawing offsets
 			vx,vy  = vx + ox, vy + oy
 			vx2,vy2= vx2 + ox, vy2 + oy
