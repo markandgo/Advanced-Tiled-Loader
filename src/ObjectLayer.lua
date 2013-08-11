@@ -36,8 +36,8 @@ end
 ---------------------------------------------------------------------------------------------------
 -- Creates a new object, automatically inserts it into the layer, and then returns it
 function ObjectLayer:newObject(args, position)
+	args.layer   = self
 	local object= Object:new(args)
-	object.layer= self
    table.insert(self.objects, position or #self.objects+1, object) 
    return object
 end

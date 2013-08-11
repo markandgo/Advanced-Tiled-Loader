@@ -51,8 +51,8 @@ end
 ---------------------------------------------------------------------------------------------------
 function Map:newTileLayer(args,position)
 	position   = position or #self.layerOrder+1
+	args.map   = self
 	local layer= TileLayer:new(args)
-	layer.map  = self
 	local name = layer.name
    if self.layers[name] then 
       error( string.format("Map:newTileLayer - A layer named \"%s\" already exists.", name) )
@@ -65,8 +65,8 @@ end
 ---------------------------------------------------------------------------------------------------
 function Map:newObjectLayer(args, position)
 	position   = position or #self.layerOrder+1
+	args.map   = self
 	local layer= ObjectLayer:new(args)
-	layer.map  = self
 	local name = layer.name
    if self.layers[name] then 
       error( string.format("Map:newObjectLayer - A layer named \"%s\" already exists.", name) )
