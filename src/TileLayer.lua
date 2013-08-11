@@ -24,10 +24,10 @@ function TileLayer:new(args)
 		visible   = (a.visible == nil and true) or a.visible,
 		properties= a.properties or {},
 		
-		parallaxX = a.parallaxX or 1, -- scale x argument for layer:draw(x,y)
-		parallaxY = a.parallaxY or 1, -- scale y argument for layer:draw(x,y)
-		offsetX   = a.offsetX or 0,   -- x offset is added to x position
-		offsetY   = a.offsetY or 0,   -- y offset is added to y position
+		parallaxX = a.parallaxX or 0, -- scale map.ox
+		parallaxY = a.parallaxY or 0, -- scale map.oy
+		offsetX   = a.offsetX or 0,   -- x offset added to map position
+		offsetY   = a.offsetY or 0,   -- y offset added to map position
 		
 		cells     = {},
 		_gridflip = Grid:new(),

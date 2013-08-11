@@ -21,10 +21,10 @@ function ObjectLayer:new(args)
 		properties = a.properties or {},
 		visible    = (a.visible== nil and true) or a.visible,
 		
-		parallaxX  = a.parallaxX or 1,
-		parallaxY  = a.parallaxY or 1,
-		offsetX    = a.offsetX or 0,
-		offsetY    = a.offsetY or 0,
+		parallaxX  = a.parallaxX or 0, -- scale map.ox
+		parallaxY  = a.parallaxY or 0, -- scale map.oy
+		offsetX    = a.offsetX or 0,   -- offset added to map position
+		offsetY    = a.offsetY or 0,   -- offset added to map position
 		
 		objects    = {},
 		_drawlist  = {},
