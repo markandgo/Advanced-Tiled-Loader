@@ -31,7 +31,7 @@ function Map:new(args)
 		oy         = a.oy or 0,
 		
 		properties = a.properties or {},
-		__drawrange= nil, -- {x,y,x2,y2} no drawrange means draw everything
+		_drawrange = nil, -- {x,y,x2,y2} no drawrange means draw everything
 		
 	},Map)
 end
