@@ -20,15 +20,18 @@ end
 function Grid:rectangle(x,y,x2,y2,skipNil)
 	local xi,yi = x-1,y
 	return function()
-		repeat
+		while true do
 			xi = xi+1
-			if xi > x2 then yi = yi + 1; xi = x end
 			if yi > y2 then return end
-			local v = Grid.get(self,xi,yi)
-			if v or not skipNil then
-				return xi,yi,v
+			if xi > x2 then 
+				yi = yi + 1; xi = x-1 
+			else
+				local v = Grid.get(self,xi,yi)
+				if v or not skipNil then
+					return xi,yi,v
+				end
 			end
-		until v
+		end
 	end
 end
 ---------------------------------------------------------------------------------------------------
