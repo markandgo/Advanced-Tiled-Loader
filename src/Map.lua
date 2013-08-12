@@ -96,6 +96,8 @@ end
 -- Point (0,0) is the apex of tile (0,0).
 function Map:fromIso(ix,iy)
 	local hw,hh = self.tilewidth/2,self.tileheight/2
+	-- tiles on the same row have the same sum
+	-- tiles on the same column have the same difference
 	return hw*(ix - iy),hh*(ix + iy)
 end
 ---------------------------------------------------------------------------------------------------
@@ -155,7 +157,7 @@ function Map:autoDrawRange(dx,dy, scale, padding)
 	local w,h    = getWindow()
 	dx,dy        = -(dx or 0),-(dy or 0)
 	scale,padding= scale or 1, padding or 30
-	-- bigger scale --> make things smaller
+	-- bigger scale --> make view smaller
 	scale        = 1/scale
 	padding      = padding * scale
 	

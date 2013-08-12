@@ -9,7 +9,6 @@ if love.graphics.newGeometry then
 	addQuad = 'add'
 end
 
-local bitoffset= 2^16
 local floor    = math.floor
 local min,max  = math.min,math.max
 
@@ -45,7 +44,6 @@ function TileLayer:clear()
 	self._batchid = {}
 end
 ---------------------------------------------------------------------------------------------------
--- store y coordinate as 16 bits for redraw
 -- passing nil clears a tile
 function TileLayer:setTile(tx,ty,tile,flipbits)
 	self:set(tx,ty,tile)
