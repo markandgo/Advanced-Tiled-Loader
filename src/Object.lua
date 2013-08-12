@@ -78,11 +78,6 @@ function Object:updateAABB()
 	bb[1],bb[2],bb[3],bb[4] = left,top,right,bot
 end
 ---------------------------------------------------------------------------------------------------
-function Object:drawAABB()
-	local x,y,x2,y2 = unpack(self._bbox)
-	love.graphics.rectangle('line',x,y,x2-x,y2-y)
-end
----------------------------------------------------------------------------------------------------
 -- Draw the object.
 function Object:draw()
 
