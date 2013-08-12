@@ -21,8 +21,8 @@ function ObjectLayer:new(args)
 		properties = a.properties or {},
 		visible    = (a.visible== nil and true) or a.visible,
 		
-		parallaxX  = a.parallaxX or 0, -- scale map.ox
-		parallaxY  = a.parallaxY or 0, -- scale map.oy
+		parallaxX  = a.parallaxX or 1, -- 1 is normal speed
+		parallaxY  = a.parallaxY or 1, -- 1 is normal speed
 		offsetX    = a.offsetX or 0,   -- offset added to map position
 		offsetY    = a.offsetY or 0,   -- offset added to map position
 		
@@ -55,8 +55,8 @@ function ObjectLayer:draw()
 	local map= self.map
 	
 	-- origin offset
-	local ox = map.ox * self.parallaxX - self.offsetX
-	local oy = map.oy * self.parallaxY - self.offsetY
+	local ox = map.ox - (map.ox * self.parallaxX) - self.offsetX
+	local oy = map.oy - (map.oy * self.parallaxY) - self.offsetY
 	local x,y= map.x - ox, map.y - oy
 	
 	if self._redraw then

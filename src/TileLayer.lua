@@ -23,8 +23,8 @@ function TileLayer:new(args)
 		visible   = (a.visible == nil and true) or a.visible,
 		properties= a.properties or {},
 		
-		parallaxX = a.parallaxX or 0, -- scale map.ox
-		parallaxY = a.parallaxY or 0, -- scale map.oy
+		parallaxX = a.parallaxX or 1, -- 1 is normal speed
+		parallaxY = a.parallaxY or 1, -- 1 is normal speed
 		offsetX   = a.offsetX or 0,   -- x offset added to map position
 		offsetY   = a.offsetY or 0,   -- y offset added to map position
 		
@@ -94,8 +94,8 @@ function TileLayer:draw()
 	local unbind,ox,oy,x,y
 	
 	-- origin offset
-	ox = map.ox * self.parallaxX - self.offsetX
-	oy = map.oy * self.parallaxY - self.offsetY
+	ox = map.ox - (map.ox * self.parallaxX) - self.offsetX
+	oy = map.oy - (map.oy * self.parallaxY) - self.offsetY
 	
 	-- draw location
 	x = map.x
