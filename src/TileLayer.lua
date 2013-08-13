@@ -91,15 +91,11 @@ function TileLayer:draw()
 	if not self.visible then return end
 	
 	local map = self.map
-	local unbind,ox,oy,x,y
+	local unbind,ox,oy
 	
 	-- origin offset
 	ox = map.ox - (map.ox * self.parallaxX) - self.offsetX
 	oy = map.oy - (map.oy * self.parallaxY) - self.offsetY
-	
-	-- draw location
-	x = map.x
-	y = map.y
 	
 	local r,g,b,a = love.graphics.getColor()
 	love.graphics.setColor(r,g,b,self.opacity*a)
@@ -223,11 +219,10 @@ function TileLayer:draw()
 
 	end
 			
-	x,y = x-ox, y-oy
 	for tileset,batch in pairs(self._batches) do
 		if unbind then batch:unbind() end
 	
-		love.graphics.draw(batch, x+tileset.offsetX,y+tileset.offsetY)
+		love.graphics.draw(batch, tileset.offsetX - ox, tileset.offsetY - oy)
 	end
 	love.graphics.setColor(r,g,b,a)
 end

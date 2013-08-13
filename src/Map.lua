@@ -25,8 +25,6 @@ function Map:new(args)
 		layerOrder = a.layerOrder or {}, -- indexed by draw order
 		tiles      = a.tiles or {}, -- indexed by gid
 		
-		x          = a.x or 0, -- draw location
-		y          = a.y or 0,
 		ox         = a.ox or 0, -- origin offset, affects parallax
 		oy         = a.oy or 0,
 		

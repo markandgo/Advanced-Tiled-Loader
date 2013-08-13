@@ -57,7 +57,6 @@ function ObjectLayer:draw()
 	-- origin offset
 	local ox = map.ox - (map.ox * self.parallaxX) - self.offsetX
 	local oy = map.oy - (map.oy * self.parallaxY) - self.offsetY
-	local x,y= map.x - ox, map.y - oy
 	
 	if self._redraw then
 		self._redraw = false
@@ -82,7 +81,7 @@ function ObjectLayer:draw()
 	end
 	
 	love.graphics.push()
-	love.graphics.translate(x,y)
+	love.graphics.translate(-ox,-oy)
 	local old_width = love.graphics.getLineWidth()
 	
 	love.graphics.setLineWidth(2)
