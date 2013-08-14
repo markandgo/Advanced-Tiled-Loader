@@ -2,6 +2,11 @@ Advanced Tiled Loader
 --------------------------------------------------------------------------------------
 
 CHANGES:
+0.1.6F (2013/8/14)
+- Fixed Grid:rectangle iterating when end interval is smaller than starting interval
+- Fixed transparency for layers/objectlayers
+- Changed objects with gid to draw with current color
+
 0.1.5F (2013/8/9)
 - Added TileLayer:clear
 - Changed TileLayer:setTile to accept nil to clear a tile
