@@ -148,22 +148,21 @@ function Map:setDrawRange(x,y,x2,y2)
 	end
 end
 ---------------------------------------------------------------------------------------------------
--- dx,dy is the map translation from its origin (in local coordinates)
+-- cx,cy is the local pixel coordinate to center 
 -- scale: scale of map
 local getWindow = love.graphics.getMode or love.window.getMode
-function Map:autoDrawRange(dx,dy, scale, padding)
+function Map:autoDrawRange(cx,cy, scale, padding)
 	local w,h    = getWindow()
-	dx,dy        = -(dx or 0),-(dy or 0)
-	scale,padding= scale or 1, padding or 30
+	local hw,hh  = w/2,h/2
+	scale,padding= scale or 1, padding or 50
 	-- bigger scale --> make view smaller
-	scale        = 1/scale
-	padding      = padding * scale
+	local dw,dh  = (hw+padding) / scale, (hh+padding) / scale
 	
 	self:setDrawRange(
-		dx - padding,
-		dy - padding,
-		dx + w * scale + padding,
-		dy + h * scale + padding)
+		cx - dw ,
+		cy - dh,
+		cx + dw ,
+		cy + dh)
 end
 ---------------------------------------------------------------------------------------------------
 return Map
