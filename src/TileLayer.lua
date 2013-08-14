@@ -91,11 +91,11 @@ function TileLayer:draw()
 	if not self.visible then return end
 	
 	local map = self.map
-	local unbind,ox,oy
+	local unbind
 	
 	-- origin offset
-	ox = map.ox - (map.ox * self.parallaxX) - self.offsetX
-	oy = map.oy - (map.oy * self.parallaxY) - self.offsetY
+	local ox = (map.ox * self.parallaxX) - map.ox - self.offsetX
+	local oy = (map.oy * self.parallaxY) - map.oy - self.offsetY
 	
 	local r,g,b,a = love.graphics.getColor()
 	love.graphics.setColor(r,g,b,self.opacity*a)

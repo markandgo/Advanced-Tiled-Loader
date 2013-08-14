@@ -55,8 +55,8 @@ function ObjectLayer:draw()
 	local map= self.map
 	
 	-- origin offset
-	local ox = map.ox - (map.ox * self.parallaxX) - self.offsetX
-	local oy = map.oy - (map.oy * self.parallaxY) - self.offsetY
+	local ox = (map.ox * self.parallaxX) - map.ox - self.offsetX
+	local oy = (map.oy * self.parallaxY) - map.oy - self.offsetY
 	
 	if self._redraw then
 		self._redraw = false
