@@ -84,41 +84,52 @@ function Object:draw()
    if not self.visible then return end
 	
 	local map   = self.layer.map
-	local th    = map.tileheight
+	local tw,th = map.tilewidth, map.tileheight
 	
 	local x,y      = self.x,self.y
 	local isIso    = map.orientation == 'isometric'
 	local points   = self.polyline or self.polygon
-	local newpoints= points
-	
-	
-	-- isometric tiles have unit length of one tileheight
-	-- have to convert every point to "real" coordinates
-	if isIso then
-		x,y = x/th,y/th
-		x,y = map:fromIso(x,y)
-		
-		if points then
-			newpoints = {}
-			for i = 1,#points,2 do
-				local x,y = points[i] / th ,points[i+1] / th
-				newpoints[i],newpoints[i+1] = map:fromIso(x,y)
-			end
-		end
-	end
 	
 	love.graphics.push()
+	
+	if isIso and not self.gid then
+--[[
+	length of tile diagonal
+		in isometric coordinates: sqrt(th*th + th*th) = sqrt(2) * th = a
+	x is the scale factor for 
+		diagonal to equal tileheight: a * x = th
+		x = sqrt(2) / 2
+	the height to width ratio = th/tw
+	
+		  th
+		-------
+		|*    |
+		|  *  | th
+		|    *|
+		-------
+]]
+		
+		local h_ratio   = th/tw
+		local h_to_diag = 1 / 2^.5
+
+		love.graphics.scale(1,h_ratio)
+		love.graphics.scale(h_to_diag/h_ratio)
+		love.graphics.rotate(math.pi / 4)
+	elseif self.gid then
+		x,y = map:fromIso(x/th,y/th)
+	end
+	
 	love.graphics.translate(x,y)
 	
 	-- The object is a polyline.
 	if self.polyline then
 		
-		love.graphics.line( newpoints )
+		love.graphics.line( points )
 	  
 	-- The object is a polygon.
 	elseif self.polygon then
 		
-		love.graphics.polygon( self.drawmode, newpoints ) 
+		love.graphics.polygon( self.drawmode, points ) 
 	  
 	-- The object is a tile object. Draw the tile.
 	elseif self.gid then
@@ -127,17 +138,15 @@ function Object:draw()
 		
 		-- align bottom center (iso) / left (ortho)
 		tile:draw((isIso and 0.5 or 0) * -tileset.tilewidth,-tileset.tileheight)
+	elseif self.ellipse then
+		local w,h= self.width,self.height
+		local r  = w/2
+		-- stretch circle vertically
+		love.graphics.scale(1,h/w)
+		love.graphics.circle(self.drawmode, r,r, r)
 	else
-		if isIso then 
-			local w,h  = self.width/th, self.height/th
-			local x1,y1= map:fromIso(w,0)
-			local x2,y2= map:fromIso(w,h)
-			local x3,y3= map:fromIso(0,h)
-			
-			love.graphics.polygon(self.drawmode, 0,0, x1,y1, x2,y2, x3,y3)
-		else
-			love.graphics.rectangle(self.drawmode, 0,0, self.width,self.height )
-		end
+		local w,h= self.width,self.height
+		love.graphics.rectangle(self.drawmode, 0,0, w,h )
 	end
 	
 	love.graphics.pop()
