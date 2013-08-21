@@ -25,6 +25,7 @@ function ObjectLayer:new(args)
 		parallaxY  = a.parallaxY or 1, -- 1 is normal speed
 		offsetX    = a.offsetX or 0,   -- offset added to map position
 		offsetY    = a.offsetY or 0,   -- offset added to map position
+		linewidth  = a.linewidth or 2,
 		
 		objects    = {},
 		_drawlist  = {},
@@ -84,7 +85,7 @@ function ObjectLayer:draw()
 	love.graphics.translate(-ox,-oy)
 	local old_width = love.graphics.getLineWidth()
 	
-	love.graphics.setLineWidth(2)
+	love.graphics.setLineWidth(self.linewidth)
 	
 	local r,g,b,a = love.graphics.getColor()
 	local color   = self.color
