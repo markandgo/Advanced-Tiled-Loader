@@ -2,6 +2,10 @@ Advanced Tiled Loader
 --------------------------------------------------------------------------------------
 
 CHANGES:
+0.1.7F (2013/9/4)
+- Fixed storing path of loader in init.lua
+- Fixed path location of image stored in a TSX file
+
 0.1.6F (2013/8/14)
 - Fixed Grid:rectangle iterating when end interval is smaller than starting interval
 - Fixed transparency for layers/objectlayers

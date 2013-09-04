@@ -225,6 +225,14 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 			tileset.offsetX = element.x
 			tileset.offsetY = element.y
 		elseif etype == 'image' then
+			-- The image stored in the TSX file is relative to its location
+			-- The source is changed to be relative to the location of the TMX file
+			if tmxtileset.source then
+				local dir_of_tsx = getPathComponents( tmxtileset.source )
+				element.source   = string.format( '/%s/%s',
+					dir_of_tsx, 
+					element.source )
+			end
 			Loader._expandImage(element,tmxmap)
 			tileset.image      = element.image
 			tileset.imagesource= element.source
