@@ -260,24 +260,26 @@ function TileLayer:isoRectangle(vx,vy,vx2,vy2)
 		while true do
 			-- count by 2 on horizontal axis
 			xi = xi+2
+			if yi > y2 then return end
 			if xi > x2 then 
-				yi = yi + 1; xi = x1 
+				yi = yi + 1; xi = x1 - 2
 				
 				local offset = yi % 2
 				xi = xi - (xi % 2) + offset
-			end
-			if yi > y2 then return end
+			else
 -- http://gamedev.stackexchange.com/questions/25896/how-do-i-find-which-isometric-tiles-are-inside-the-cameras-current-view
 
-			-- equation obtained from solving
-			-- y = tx + ty
-			-- x = tx - ty
-			local tx,ty = (yi  + xi)*0.5,
-				(yi  - xi)*0.5
-			
-			local tile = Grid.get(self,tx,ty)
-			if tile then
-				return tx,ty,tile
+				-- equation obtained from solving
+				-- y = tx + ty
+				-- x = tx - ty
+				local tx,ty = (yi  + xi)*0.5,
+					(yi  - xi)*0.5
+				
+				local tile = Grid.get(self,tx,ty)
+				if tile then
+					return tx,ty,tile
+				end
+				
 			end
 		end
 	end
