@@ -23,6 +23,8 @@ function ObjectLayer:new(args)
    local layer = setmetatable({
 		map        = a.map or error 'Must specify a map as an argument',
 		
+		-- OPTIONAL:
+		
 		name       = a.name or 'Unnamed ObjectLayer',
 		color      = a.color or grey,
 		opacity    = a.opacity or 1,
@@ -34,6 +36,8 @@ function ObjectLayer:new(args)
 		offsetX    = a.offsetX or 0,   -- offset added to map position
 		offsetY    = a.offsetY or 0,   -- offset added to map position
 		linewidth  = a.linewidth or 2,
+		
+		-- INIT:
 		
 		objects    = {},
 		_drawlist  = {},

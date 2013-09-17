@@ -26,6 +26,8 @@ function TileLayer:new(args)
 	local tilelayer = {
 		map       = a.map or error 'Must specify a map as an argument',
 		
+		-- OPTIONAL:
+		
 		name      = a.name or 'Unnamed Layer',
 		opacity   = a.opacity or 1, 
 		visible   = (a.visible == nil and true) or a.visible,
@@ -35,6 +37,8 @@ function TileLayer:new(args)
 		parallaxY = a.parallaxY or 1, -- 1 is normal speed
 		offsetX   = a.offsetX or 0,   -- x offset added to map position
 		offsetY   = a.offsetY or 0,   -- y offset added to map position
+		
+		-- INIT:
 		
 		cells     = {},
 		_gridflip = Grid:new(),

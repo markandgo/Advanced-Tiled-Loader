@@ -19,14 +19,17 @@ Object.__index = Object
 function Object:new(args)
 	local a = args
 	local object = setmetatable({
-		name      = a.name or '',
-		type      = a.type or '',
 		
 		layer     = a.layer,
 		polygon   = a.polygon,
 		polyline  = a.polyline,
 		ellipse   = a.ellipse, -- boolean
 		gid       = a.gid,
+		
+		-- OPTIONAL:
+		
+		name      = a.name or '',
+		type      = a.type or '',
 		
 		drawmode  = a.drawmode or 'line',
 		x         = a.x or 0,
@@ -35,6 +38,8 @@ function Object:new(args)
 		height    = a.height or 0,
 		visible   = (a.visible == nil and true) or a.visible,
 		properties= a.properties or {},
+		
+		-- INIT:
 		
 		_bbox     = {0,0,0,0},
 

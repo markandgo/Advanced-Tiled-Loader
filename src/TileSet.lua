@@ -29,18 +29,19 @@ function TileSet:new(args)
 		
 		image      = a.image,
 		imagesource= a.imagesource,
-		trans      = a.trans, -- hexadecimal string
+		trans      = a.trans, -- hexadecimal string "aabbcc"
 		
-		tiles      = a.tiles, -- indexed by local id
+		-- OPTIONAL:
 		
-		-- optional
 		name       = a.name or 'Unnamed TileSet',
 		spacing    = a.spacing or 0,
 		margin     = a.margin or 0,
-		properties = a.properties or {},
 		
 		offsetX    = a.offsetX or 0,
 		offsetY    = a.offsetY or 0,
+		
+		tiles      = a.tiles, -- indexed by local id
+		properties = a.properties or {},
 		
 	},TileSet)
 	
