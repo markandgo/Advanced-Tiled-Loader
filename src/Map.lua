@@ -27,16 +27,18 @@ function Map:new(args)
 		tilewidth  = a.tilewidth,
 		tileheight = a.tileheight,
 		
+		-- OPTIONAL:
+		
 		orientation= a.orientation or 'orthogonal',
+		ox         = a.ox or 0, -- origin offset, affects parallax
+		oy         = a.oy or 0,
+		
 		layers     = a.layers or {}, -- indexed by name
 		tilesets   = a.tilesets or {}, -- indexed by name
 		layerOrder = a.layerOrder or {}, -- indexed by draw order
 		tiles      = a.tiles or {}, -- indexed by gid
-		
-		ox         = a.ox or 0, -- origin offset, affects parallax
-		oy         = a.oy or 0,
-		
 		properties = a.properties or {},
+		
 		_drawrange = nil, -- {x,y,x2,y2} no drawrange means draw everything
 		
 	},Map)
