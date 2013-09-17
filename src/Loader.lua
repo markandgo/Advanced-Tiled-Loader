@@ -1,10 +1,18 @@
+--[[
+This code falls under the terms of the MIT license.
+The full license can be found in "license.txt".
+
+Copyright (c) 2011-2012 Casey Baxter
+Copyright (c) 2013 Minh Ngo
+]]
+
 ---------------------------------------------------------------------------------------------------
 -- -= Loader =-
 ---------------------------------------------------------------------------------------------------
 
 -- Define path so lua knows where to look for files.
 TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
-local base64     = require(TILED_LOADER_PATH .. 'external.base64')
+local base64     = require(TILED_LOADER_PATH .. 'Base64')
 local xmlparser  = require(TILED_LOADER_PATH .. 'external.xml')
 local deflate    = require(TILED_LOADER_PATH ..'external.deflate')
 local Map        = require(TILED_LOADER_PATH .. "Map")
