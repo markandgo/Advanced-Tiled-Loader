@@ -23,16 +23,21 @@ function ObjectLayer:new(args)
    local layer = setmetatable({
 		map        = a.map or error 'Must specify a map as an argument',
 		
+		-- OPTIONAL:
+		
 		name       = a.name or 'Unnamed ObjectLayer',
 		color      = a.color or grey,
 		opacity    = a.opacity or 1,
-		properties = a.properties or {},
 		visible    = (a.visible== nil and true) or a.visible,
 		
 		parallaxX  = a.parallaxX or 1,
 		parallaxY  = a.parallaxY or 1,
 		offsetX    = a.offsetX or 0,
 		offsetY    = a.offsetY or 0,
+		
+		properties = a.properties or {},
+		
+		-- INIT:
 		
 		objects    = {},
       

@@ -28,15 +28,20 @@ function TileLayer:new(args)
 	local tilelayer = {
 		map       = a.map or error 'Must specify a map as an argument',
 		
+		-- OPTIONAL:
+		
 		name      = a.name or 'Unnamed Layer',
 		opacity   = a.opacity or 1, 
 		visible   = (a.visible == nil and true) or a.visible,
-		properties= a.properties or {},
 		
 		parallaxX = a.parallaxX or 1, -- scale x argument for layer:draw(x,y)
 		parallaxY = a.parallaxY or 1, -- scale y argument for layer:draw(x,y)
 		offsetX   = a.offsetX or 0,   -- x offset is added to x position
 		offsetY   = a.offsetY or 0,   -- y offset is added to y position
+		
+		properties= a.properties or {},
+		
+		-- INIT:
 		
 		cells     = {},
 		_gridflip = Grid:new(),

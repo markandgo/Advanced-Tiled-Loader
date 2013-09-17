@@ -25,12 +25,14 @@ function Map:new(args)
 		tilewidth  = a.tilewidth,
 		tileheight = a.tileheight,
 		
+		-- OPTIONAL:
+		
 		orientation= a.orientation or 'orthogonal',
+		
 		layers     = a.layers or {}, -- indexed by name
 		tilesets   = a.tilesets or {}, -- indexed by name
 		layerOrder = a.layerOrder or {}, -- indexed by draw order
 		tiles      = a.tiles or {}, -- indexed by gid
-		
 		properties = a.properties or {},
 		
 	},Map)

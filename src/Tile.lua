@@ -25,7 +25,7 @@ function Tile:new(args)
 		quad      = a.quad,
 		tileset   = a.tileset,
 		
-		-- optional
+		-- OPTIONAL:
 		properties= a.properties or {},
 	}
 	return setmetatable(tile,Tile)
