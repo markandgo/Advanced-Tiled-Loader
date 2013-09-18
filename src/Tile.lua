@@ -21,7 +21,6 @@ function Tile:new(args)
 	local a = args
 	local tile = {
 		gid       = a.gid,
-		image     = a.image,
 		quad      = a.quad,
 		tileset   = a.tileset,
 		
@@ -33,7 +32,7 @@ end
 
 -- Draws the tile at the given location 
 function Tile:draw(...)
-	draw(self.image,self.quad,...)
+	draw(self.tileset.image,self.quad,...)
 end
 
 -- Return the Tile class

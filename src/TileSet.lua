@@ -77,7 +77,6 @@ function TileSet:makeTiles()
 			local tile = Tile:new{
 				gid    = gid,
 				tileset= self,
-				image  = self.image,
 				quad   = quad,
 			}
 			tiles[id] = tile

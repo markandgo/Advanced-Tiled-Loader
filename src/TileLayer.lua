@@ -172,7 +172,7 @@ function TileLayer:draw()
 			-- make batch if it doesn't exist
 			if not self._batches[tileset] then
 				local size   = map.width * map.height
-				batch        = love.graphics.newSpriteBatch(tile.image,size)
+				batch        = love.graphics.newSpriteBatch(tile.tileset.image,size)
 				
 				self._batches[tileset] = batch
 				batch:bind()
