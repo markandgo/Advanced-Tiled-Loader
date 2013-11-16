@@ -28,6 +28,11 @@ local allowed_property = {
 	boolean= true,
 }
 
+local Loader = {
+	filterMin = 'nearest', 
+	filterMag = 'nearest',
+}
+
 ---------------------------------------------------------------------------------------------------
 -- PATH FUNCTIONS
 
@@ -94,12 +99,6 @@ local function byteToNumber(str)
 	end
 	return num
 end
----------------------------------------------------------------------------------------------------
-
-local Loader = {
-	filterMin = 'nearest', 
-	filterMag = 'nearest',
-}
 ---------------------------------------------------------------------------------------------------
 -- should return map else error as second message
 
