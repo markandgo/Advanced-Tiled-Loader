@@ -2,6 +2,11 @@ Advanced Tiled Loader
 --------------------------------------------------------------------------------------
 
 CHANGES:
+0.1.8F (2013/11/16)
+- Changed base64 to Baxter's base64
+- Fixed loading with Baxter's base64
+- Moved Loader table init code to top
+
 0.1.7F (2013/9/4)
 - Fixed storing path of loader in init.lua
 - Fixed path location of image stored in a TSX file
