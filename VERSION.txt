@@ -2,6 +2,11 @@ Advanced Tiled Loader
 --------------------------------------------------------------------------------------
 
 CHANGES:
+0.2.0F (Pending)
+- Readded ability to limit draw range and many new methods
+- Changed Loader saving/loading to show traceback on error
+- Changed ellipses to actually be drawn as ellipses
+
 0.1.8F (2013/11/16)
 - Changed base64 to Baxter's base64
 - Fixed loading with Baxter's base64
