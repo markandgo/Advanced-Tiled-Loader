@@ -297,7 +297,7 @@ function Loader._streamLayerData(tmxlayer,tmxmap)
 	for i = 1,#tmxlayer do
 		if tmxlayer[i][elementkey] == 'data' then data = tmxlayer[i]; break end
 	end
-	local str   = data.encoding == 'base64' and base64.dec(data[1]) or data[1]
+	local str   = data.encoding == 'base64' and base64.dec('string',data[1]) or data[1]
 	
 	local bytes = {len = 0}
 	
