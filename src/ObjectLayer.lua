@@ -10,7 +10,7 @@ Copyright (c) 2013 Minh Ngo
 -- -= ObjectLayer =-
 ---------------------------------------------------------------------------------------------------
 -- Setup
-TILED_LOADER_PATH  = TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
+TILED_LOADER_PATH  = TILED_LOADER_PATH or (...):match('^.+[%.\\/]')
 local Object       = require( TILED_LOADER_PATH .. "Object")
 local ObjectLayer  = {class= "ObjectLayer"}
 local grey         = {128,128,128,255}

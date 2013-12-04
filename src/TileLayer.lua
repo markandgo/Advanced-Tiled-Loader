@@ -6,7 +6,7 @@ Copyright (c) 2011-2012 Casey Baxter
 Copyright (c) 2013 Minh Ngo
 ]]
 
-TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
+TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]')
 local Grid       = require(TILED_LOADER_PATH..'Grid')
 local TileLayer  = setmetatable( {class= "TileLayer"}, {__index = Grid})
 TileLayer.__index= TileLayer

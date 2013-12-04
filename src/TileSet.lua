@@ -10,7 +10,7 @@ Copyright (c) 2013 Minh Ngo
 -- -= TileSet =-
 ---------------------------------------------------------------------------------------------------
 -- Setup
-TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
+TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]')
 local Tile       = require(TILED_LOADER_PATH..'Tile')
 local TileSet    = {class= "TileSet"}
 TileSet.__index  = TileSet
