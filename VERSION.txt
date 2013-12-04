@@ -2,7 +2,7 @@ Advanced Tiled Loader
 --------------------------------------------------------------------------------------
 
 CHANGES:
-0.2.0F (Pending)
+0.2.0F (2013/12/4)
 - Readded ability to limit draw range and many new methods
 - Added Class module to make it easier to handle classes
 - Changed Loader saving/loading to show traceback on error
