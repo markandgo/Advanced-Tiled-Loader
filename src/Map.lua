@@ -7,6 +7,7 @@ Copyright (c) 2013 Minh Ngo
 ]]
 
 TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]')
+local Class      = require(TILED_LOADER_PATH .. 'Class')
 local Tile       = require(TILED_LOADER_PATH..'Tile')
 local TileSet    = require(TILED_LOADER_PATH..'TileSet')
 local TileLayer  = require(TILED_LOADER_PATH..'TileLayer')
@@ -14,34 +15,27 @@ local ObjectLayer= require(TILED_LOADER_PATH..'ObjectLayer')
 
 local floor = math.floor
 
-local Map   = {class= "Map"}
-Map.__index = Map
+local Map   = Class "Map" {}
 Map.__call  = function(self, layername) return self.layers[layername] end
 ---------------------------------------------------------------------------------------------------
-function Map:new(args)
+function Map:init(args)
 	local a = args
-	return setmetatable({
 	
-		width      = a.width,
-		height     = a.height,
-		tilewidth  = a.tilewidth,
-		tileheight = a.tileheight,
-		
-		-- OPTIONAL:
-		
-		orientation= a.orientation or 'orthogonal',
-		ox         = a.ox or 0, -- origin offset, affects parallax
-		oy         = a.oy or 0,
-		
-		layers     = a.layers or {}, -- indexed by name
-		tilesets   = a.tilesets or {}, -- indexed by name
-		layerOrder = a.layerOrder or {}, -- indexed by draw order
-		tiles      = a.tiles or {}, -- indexed by gid
-		properties = a.properties or {},
-		
-		_drawrange = nil, -- {x,y,x2,y2} no drawrange means draw everything
-		
-	},Map)
+	self.width      = a.width
+	self.height     = a.height
+	self.tilewidth  = a.tilewidth
+	self.tileheight = a.tileheight
+	
+	-- OPTIONAL:
+	self.orientation= a.orientation or 'orthogonal'
+	self.ox         = a.ox or 0 -- origin offset affects parallax
+	self.oy         = a.oy or 0
+	self.layers     = a.layers or {} -- indexed by name
+	self.tilesets   = a.tilesets or {} -- indexed by name
+	self.layerOrder = a.layerOrder or {} -- indexed by draw order
+	self.tiles      = a.tiles or {} -- indexed by gid
+	self.properties = a.properties or {}
+	self._drawrange = nil -- {xyx2y2} no drawrange means draw everything
 end
 ---------------------------------------------------------------------------------------------------
 function Map:newTileSet(args)

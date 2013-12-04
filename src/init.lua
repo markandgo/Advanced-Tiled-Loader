@@ -19,4 +19,5 @@ return {
 	Loader     = require(TILED_LOADER_PATH  .. "Loader"),
 	Grid       = require(TILED_LOADER_PATH .. "Grid"),
 	Base64     = require(TILED_LOADER_PATH .. "Base64"),
+	Class      = require(TILED_LOADER_PATH .. "Class"),
 }

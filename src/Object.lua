@@ -6,48 +6,43 @@ Copyright (c) 2011-2012 Casey Baxter
 Copyright (c) 2013 Minh Ngo
 ]]
 
+TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]')
+local Class      = require(TILED_LOADER_PATH .. 'Class')
 ---------------------------------------------------------------------------------------------------
 -- -= Object =-
 ---------------------------------------------------------------------------------------------------
 -- Setup
-local Object = {class = "Object"}
-Object.__index = Object
-
+local Object = Class "Object" {}
 ---------------------------------------------------------------------------------------------------
 
 -- Returns a new Object
-function Object:new(args)
+function Object:init(args)
 	local a = args
-	local object = setmetatable({
-		
-		layer     = a.layer,
-		polygon   = a.polygon,
-		polyline  = a.polyline,
-		ellipse   = a.ellipse, -- boolean
-		gid       = a.gid,
-		
-		-- OPTIONAL:
-		
-		name      = a.name or '',
-		type      = a.type or '',
-		
-		drawmode  = a.drawmode or 'line',
-		x         = a.x or 0,
-		y         = a.y or 0,
-		width     = a.width or 0,
-		height    = a.height or 0,
-		visible   = (a.visible == nil and true) or a.visible,
-		properties= a.properties or {},
-		
-		-- INIT:
-		
-		_bbox     = {0,0,0,0},
-
-	},Object)
 	
-	object:updateAABB()
+	self.layer     = a.layer
+	self.polygon   = a.polygon
+	self.polyline  = a.polyline
+	self.ellipse   = a.ellipse -- boolean
+	self.gid       = a.gid
 	
-	return object
+	-- OPTIONAL:
+	
+	self.name      = a.name or ''
+	self.type      = a.type or ''
+	
+	self.drawmode  = a.drawmode or 'line'
+	self.x         = a.x or 0
+	self.y         = a.y or 0
+	self.width     = a.width or 0
+	self.height    = a.height or 0
+	self.visible   = (a.visible == nil and true) or a.visible
+	self.properties= a.properties or {}
+	
+	-- INIT:
+	
+	self._bbox     = {0000}
+	
+	Object.updateAABB(self)
 end
 
 ---------------------------------------------------------------------------------------------------

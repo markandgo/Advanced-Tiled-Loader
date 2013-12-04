@@ -6,14 +6,14 @@ Copyright (c) 2011-2012 Casey Baxter
 Copyright (c) 2013 Minh Ngo
 ]]
 
-local Grid   = {class = 'Grid'}
-Grid.__index = Grid
+TILED_LOADER_PATH = TILED_LOADER_PATH or (...):match('^.+[%.\\/]')
+local Class       = require(TILED_LOADER_PATH .. 'Class')
+
+local Grid   = Class 'Grid' {}
 Grid.__call  = function(...) return Grid.get(...) end
 
-function Grid:new()
-	self      = setmetatable({},Grid)
-	self.cells= {}
-	return self
+function Grid:init()
+	self.cells = {}
 end
 ---------------------------------------------------------------------------------------------------
 function Grid:get(x,y)

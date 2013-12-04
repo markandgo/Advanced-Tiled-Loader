@@ -7,10 +7,8 @@ Copyright (c) 2013 Minh Ngo
 ]]
 
 TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]')
+local Class      = require(TILED_LOADER_PATH .. 'Class')
 local Grid       = require(TILED_LOADER_PATH..'Grid')
-local TileLayer  = setmetatable( {class= "TileLayer"}, {__index = Grid})
-TileLayer.__index= TileLayer
-TileLayer.__call = function(self,x,y) return Grid.get(self,x,y) end
 
 local addQuad = 'addq'
 if love.graphics.newGeometry then
@@ -20,33 +18,27 @@ end
 local floor    = math.floor
 local min,max  = math.min,math.max
 
+local TileLayer = Grid:extend "TileLayer" {}
 ---------------------------------------------------------------------------------------------------
-function TileLayer:new(args)
+function TileLayer:init(args)
 	local a = args
-	local tilelayer = {
-		map       = a.map or error 'Must specify a map as an argument',
-		
-		-- OPTIONAL:
-		
-		name      = a.name or 'Unnamed Layer',
-		opacity   = a.opacity or 1, 
-		visible   = (a.visible == nil and true) or a.visible,
-		properties= a.properties or {},
-		
-		parallaxX = a.parallaxX or 1, -- 1 is normal speed
-		parallaxY = a.parallaxY or 1, -- 1 is normal speed
-		offsetX   = a.offsetX or 0,   -- x offset added to map position
-		offsetY   = a.offsetY or 0,   -- y offset added to map position
-		
-		-- INIT:
-		
-		cells     = {},
-		_gridflip = Grid:new(),
-		
-		_batches  = {}, -- indexed by tileset
-		_redraw   = true,
-	}
-	return setmetatable(tilelayer,TileLayer)
+	
+	Grid.init(self)
+	
+	self.map       = a.map or error 'Must specify a map as an argument'
+	-- OPTIONAL:
+	self.name      = a.name or 'Unnamed Layer'
+	self.opacity   = a.opacity or 1 
+	self.visible   = (a.visible == nil and true) or a.visible
+	self.properties= a.properties or {}
+	self.parallaxX = a.parallaxX or 1 -- 1 is normal speed
+	self.parallaxY = a.parallaxY or 1 -- 1 is normal speed
+	self.offsetX   = a.offsetX or 0   -- x offset added to map position
+	self.offsetY   = a.offsetY or 0   -- y offset added to map position
+	-- INIT:
+	self._gridflip = Grid:new()
+	self._batches  = {} -- indexed by tileset
+	self._redraw   = true
 end
 ---------------------------------------------------------------------------------------------------
 function TileLayer:clear()

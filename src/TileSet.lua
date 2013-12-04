@@ -11,43 +11,34 @@ Copyright (c) 2013 Minh Ngo
 ---------------------------------------------------------------------------------------------------
 -- Setup
 TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]')
+local Class      = require(TILED_LOADER_PATH..'Class')
 local Tile       = require(TILED_LOADER_PATH..'Tile')
-local TileSet    = {class= "TileSet"}
-TileSet.__index  = TileSet
+
+local TileSet    = Class "TileSet" {}
 TileSet.__call   = function(self,id)
 	return self.tiles[id]
 end
-
 ----------------------------------------------------------------------------------------------------
 -- Creates a new tileset.
-function TileSet:new(args)
+function TileSet:init(args)
 	local a = args
-	local tileset = setmetatable({
-		firstgid   = a.firstgid,
-		tilewidth  = a.tilewidth,
-		tileheight = a.tileheight,
-		
-		image      = a.image,
-		imagesource= a.imagesource,
-		trans      = a.trans, -- hexadecimal string "aabbcc"
-		
-		-- OPTIONAL:
-		
-		name       = a.name or 'Unnamed TileSet',
-		spacing    = a.spacing or 0,
-		margin     = a.margin or 0,
-		
-		offsetX    = a.offsetX or 0,
-		offsetY    = a.offsetY or 0,
-		
-		tiles      = a.tiles, -- indexed by local id
-		properties = a.properties or {},
-		
-	},TileSet)
 	
-	if not tileset.tiles and tileset.image then tileset.tiles = TileSet.makeTiles(tileset) end
+	self.firstgid   = a.firstgid
+	self.tilewidth  = a.tilewidth
+	self.tileheight = a.tileheight
+	self.image      = a.image
+	self.imagesource= a.imagesource
+	self.trans      = a.trans -- hexadecimal string "aabbcc"
+	-- OPTIONAL:
+	self.name       = a.name or 'Unnamed TileSet'
+	self.spacing    = a.spacing or 0
+	self.margin     = a.margin or 0
+	self.offsetX    = a.offsetX or 0
+	self.offsetY    = a.offsetY or 0
+	self.tiles      = a.tiles -- indexed by local id
+	self.properties = a.properties or {}
 	
-	return tileset
+	if not self.tiles and self.image then self.tiles = TileSet.makeTiles(self) end
 end
 ----------------------------------------------------------------------------------------------------
 function TileSet:columns()

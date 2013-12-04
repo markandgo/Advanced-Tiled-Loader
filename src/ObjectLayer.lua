@@ -11,41 +11,35 @@ Copyright (c) 2013 Minh Ngo
 ---------------------------------------------------------------------------------------------------
 -- Setup
 TILED_LOADER_PATH  = TILED_LOADER_PATH or (...):match('^.+[%.\\/]')
+local Class        = require(TILED_LOADER_PATH .. 'Class')
 local Object       = require( TILED_LOADER_PATH .. "Object")
-local ObjectLayer  = {class= "ObjectLayer"}
-local grey         = {128,128,128,255}
-ObjectLayer.__index= ObjectLayer
 
+local grey         = {128,128,128,255}
+
+local ObjectLayer  = Class "ObjectLayer" {}
 ---------------------------------------------------------------------------------------------------
 -- Creates and returns a new ObjectLayer
-function ObjectLayer:new(args)
-	local a     = args
-   local layer = setmetatable({
-		map        = a.map or error 'Must specify a map as an argument',
-		
-		-- OPTIONAL:
-		
-		name       = a.name or 'Unnamed ObjectLayer',
-		color      = a.color or grey,
-		opacity    = a.opacity or 1,
-		properties = a.properties or {},
-		visible    = (a.visible== nil and true) or a.visible,
-		
-		parallaxX  = a.parallaxX or 1, -- 1 is normal speed
-		parallaxY  = a.parallaxY or 1, -- 1 is normal speed
-		offsetX    = a.offsetX or 0,   -- offset added to map position
-		offsetY    = a.offsetY or 0,   -- offset added to map position
-		linewidth  = a.linewidth or 2,
-		
-		-- INIT:
-		
-		objects    = {},
-		_drawlist  = {},
-		_redraw    = true,
-      
-   }, ObjectLayer)
-    
-   return layer
+function ObjectLayer:init(args)
+	local a = args
+	
+	self.map        = a.map or error 'Must specify a map as an argument'
+	
+	-- OPTIONAL:
+	self.name       = a.name or 'Unnamed ObjectLayer'
+	self.color      = a.color or grey
+	self.opacity    = a.opacity or 1
+	self.properties = a.properties or {}
+	self.visible    = (a.visible== nil and true) or a.visible
+	self.parallaxX  = a.parallaxX or 1 -- 1 is normal speed
+	self.parallaxY  = a.parallaxY or 1 -- 1 is normal speed
+	self.offsetX    = a.offsetX or 0   -- offset added to map position
+	self.offsetY    = a.offsetY or 0   -- offset added to map position
+	self.linewidth  = a.linewidth or 2
+	
+	-- INIT:
+	self.objects    = {}
+	self._drawlist  = {}
+	self._redraw    = true
 end
 
 ---------------------------------------------------------------------------------------------------

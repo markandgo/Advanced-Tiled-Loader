@@ -6,28 +6,26 @@ Copyright (c) 2011-2012 Casey Baxter
 Copyright (c) 2013 Minh Ngo
 ]]
 
+TILED_LOADER_PATH  = TILED_LOADER_PATH or (...):match('^.+[%.\\/]')
+local Class        = require(TILED_LOADER_PATH .. 'Class')
+
+local draw = love.graphics.newGeometry and love.graphics.draw or love.graphics.drawq
 ---------------------------------------------------------------------------------------------------
 -- -= Tile =-
 ---------------------------------------------------------------------------------------------------
-
-local draw = love.graphics.newGeometry and love.graphics.draw or love.graphics.drawq
-
 -- Setup
-local Tile = {class = "Tile"}
-Tile.__index = Tile
+local Tile = Class 'Tile' {}
 
 -- Creates a new tile and returns it.
-function Tile:new(args)
+function Tile:init(args)
 	local a = args
-	local tile = {
-		gid       = a.gid,
-		quad      = a.quad,
-		tileset   = a.tileset,
-		
-		-- optional
-		properties= a.properties or {},
-	}
-	return setmetatable(tile,Tile)
+	
+	self.gid     = a.gid
+	self.quad    = a.quad
+	self.tileset = a.tileset
+	
+	-- optional
+	self.properties = a.properties or {}
 end
 
 -- Draws the tile at the given location 
