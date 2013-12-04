@@ -2,11 +2,11 @@ function love.load()
 	atl = require 'src'
 	
 	function loadmap(filename)
-		-- test loading and saving
+		-- Test loading and saving
 		map = assert( atl.Loader.load(filename) )
 		assert(atl.Loader.save(map, 'test/map.tmx'))
 		
-		-- test properties
+		-- Test properties
 		assert(map.properties.map == 1)
 		
 		local ts = map.tilesets.tileset
@@ -15,13 +15,14 @@ function love.load()
 		
 		assert(map.layers['Tile Layer 1'].properties.layer == 1)
 		
-		-- staggered not supported yet
+		-- Test object properties
+		-- **Staggered does not support objects in 0.9**
 		if not map.orientation == 'staggered' then
 			assert(map.layers['Object Layer 1'].objects[1].properties.name == 'obj1')
 		end
 	end	
 	
-	-- cycle through these maps
+	-- Cycle through these maps
 	list = {
 		'map.tmx',
 		'stagmap.tmx',
@@ -31,7 +32,7 @@ function love.load()
 	
 	loadmap( list[list_i] )
 	
-	-- affects map presentation
+	-- Affects map presentation
 	x,y         = 0,0
 	scale       = 1
 	defaultspeed= 350
@@ -133,7 +134,7 @@ function love.draw()
 		'map name: '..list[list_i],
 		'scale: '..scale,
 		'Draw limit: '..tostring(not draw_all),
-		map.setDrawRange and 'Press tab to toggle draw control' or '',
+		'Press tab to toggle draw control',
 		'Press space to switch map',
 		'Arrow keys to move, mouse wheel to zoom',
 		'Press x/y/r to flipx/flipy/rotate',
