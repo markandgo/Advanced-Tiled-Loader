@@ -8,7 +8,7 @@ Copyright (c) 2013 Minh Ngo
 
 local Grid   = {class = 'Grid'}
 Grid.__index = Grid
-Grid.__call  = Grid.get
+Grid.__call  = function(...) return Grid.get(...) end
 
 function Grid:new()
 	self      = setmetatable({},Grid)
