@@ -118,8 +118,8 @@ function Map:callback(cb_name, ...)
 	end
 end
 ---------------------------------------------------------------------------------------------------
-function Map:draw()
-	self:callback('draw')
+function Map:draw(x,y)
+	self:callback('draw',x,y)
 end
 ---------------------------------------------------------------------------------------------------
 function Map:setDrawRange(x,y,x2,y2)

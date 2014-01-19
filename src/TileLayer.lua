@@ -112,7 +112,7 @@ function TileLayer:getOrientation(tx,ty)
 	return self._gridflip:get(tx,ty)
 end
 ---------------------------------------------------------------------------------------------------
-function TileLayer:draw()
+function TileLayer:draw(x,y)
 	if not self.visible then return end
 	
 	local map = self.map
@@ -247,7 +247,7 @@ function TileLayer:draw()
 	for tileset,batch in pairs(self._batches) do
 		if unbind then batch:unbind() end
 	
-		love.graphics.draw(batch, tileset.offsetX - ox, tileset.offsetY - oy)
+		love.graphics.draw(batch, x,y, nil,nil,nil, ox-tileset.offsetX, oy-tileset.offsetY)
 	end
 	love.graphics.setColor(r,g,b,a)
 end

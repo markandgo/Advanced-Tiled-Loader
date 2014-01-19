@@ -137,9 +137,8 @@ function love.draw()
 	love.graphics.push()
 	love.graphics.translate(400,300) -- center
 	love.graphics.scale(scale)
-	love.graphics.translate(-x,-y)
 	
-	map:draw()
+	map:draw(-x,-y)
 	
 	love.graphics.pop()
 	if not draw_all then

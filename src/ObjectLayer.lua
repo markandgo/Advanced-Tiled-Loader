@@ -55,7 +55,7 @@ end
 -- Draws the object layer. The way the objects are drawn depends on the map orientation and
 -- if the object has an associated tile. It tries to draw the objects as closely to the way
 -- Tiled does it as possible.
-function ObjectLayer:draw()
+function ObjectLayer:draw(x,y)
 	if not self.visible then return end
 		
 	local map= self.map
@@ -87,7 +87,7 @@ function ObjectLayer:draw()
 	end
 	
 	love.graphics.push()
-	love.graphics.translate(-ox,-oy)
+	love.graphics.translate(-ox+(x or 0),-oy+(y or 0))
 	local old_width = love.graphics.getLineWidth()
 	
 	love.graphics.setLineWidth(self.linewidth)
