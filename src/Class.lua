@@ -2,7 +2,7 @@
 This code falls under the terms of the MIT license.
 The full license can be found in "license.txt".
 
-Copyright (c) 2013 Minh Ngo
+Copyright (c) 2013-2014 Minh Ngo
 ]]
 
 -- Simple class with inspiration from other class modules
@@ -84,6 +84,8 @@ function base:extend(name)
 		
 		local pmeta = Class.__proxy_meta
 		
+		-- Invoking a missing class metamethod will invoke the metamethod 
+		-- of the super class.
 		for _,metamethod in ipairs(metamethods) do
 			metamethod        = '__'..metamethod
 			pmeta[metamethod] = function(...)
@@ -124,17 +126,6 @@ end
 
 function base:clone()
 	return deep_copy(self,{})
-end
-
--- interface for cross class-system compatibility (see https://github.com/bartbes/class-Commons).
-if class_commons ~= false and not common then
-	common = {}
-	function common.class(name, prototype, super)
-		return super and super:extend( name ) (prototype) or Class( name ) (prototype)
-	end
-	function common.instance(Class, ...)
-		return Class(...)
-	end
 end
 
 return Class

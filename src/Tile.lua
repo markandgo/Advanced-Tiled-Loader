@@ -3,13 +3,13 @@ This code falls under the terms of the MIT license.
 The full license can be found in "license.txt".
 
 Copyright (c) 2011-2012 Casey Baxter
-Copyright (c) 2013 Minh Ngo
+Copyright (c) 2013-2014 Minh Ngo
 ]]
 
-TILED_LOADER_PATH  = TILED_LOADER_PATH or (...):match('^.+[%.\\/]')
-local Class        = require(TILED_LOADER_PATH .. 'Class')
+local MODULE_PATH  = (...):match('^.+[%.\\/]')
+local Class        = require(MODULE_PATH .. 'Class')
 
-local draw = love.graphics.newGeometry and love.graphics.draw or love.graphics.drawq
+local draw = love.graphics.newMesh and love.graphics.draw or love.graphics.drawq
 ---------------------------------------------------------------------------------------------------
 -- -= Tile =-
 ---------------------------------------------------------------------------------------------------
@@ -17,15 +17,13 @@ local draw = love.graphics.newGeometry and love.graphics.draw or love.graphics.d
 local Tile = Class 'Tile' {}
 
 -- Creates a new tile and returns it.
-function Tile:init(args)
-	local a = args
-	
-	self.gid     = a.gid
-	self.quad    = a.quad
-	self.tileset = a.tileset
+function Tile:init(tileset,id,quad,properties)
+	self.tileset = tileset
+	self.id      = id
+	self.quad    = quad
 	
 	-- optional
-	self.properties = a.properties or {}
+	self.properties = properties or {}
 end
 
 -- Draws the tile at the given location 

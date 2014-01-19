@@ -3,16 +3,17 @@ This code falls under the terms of the MIT license.
 The full license can be found in "license.txt".
 
 Copyright (c) 2011-2012 Casey Baxter
-Copyright (c) 2013 Minh Ngo
+Copyright (c) 2013-2014 Minh Ngo
 ]]
 
-TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]')
-local Class      = require(TILED_LOADER_PATH .. 'Class')
-local Grid       = require(TILED_LOADER_PATH..'Grid')
+local MODULE_PATH= (...):match('^.+[%.\\/]')
+local Class      = require(MODULE_PATH .. 'Class')
+local Grid       = require(MODULE_PATH..'Grid')
 
-local addQuad = 'addq'
-if love.graphics.newGeometry then
-	addQuad = 'add'
+-- 0.8 compatibility
+local addQuad = 'add'
+if not love.graphics.newMesh then
+	addQuad = 'addq'
 end
 
 local floor    = math.floor
@@ -20,12 +21,12 @@ local min,max  = math.min,math.max
 
 local TileLayer = Grid:extend "TileLayer" {}
 ---------------------------------------------------------------------------------------------------
-function TileLayer:init(args)
-	local a = args
+function TileLayer:init(map,args)
+	local a = args or {}
 	
 	Grid.init(self)
 	
-	self.map       = a.map or error 'Must specify a map as an argument'
+	self.map       = map or error 'Must specify a map as an argument'
 	-- OPTIONAL:
 	self.name      = a.name or 'Unnamed Layer'
 	self.opacity   = a.opacity or 1 
@@ -49,9 +50,13 @@ function TileLayer:clear()
 end
 ---------------------------------------------------------------------------------------------------
 -- passing nil clears a tile
-function TileLayer:setTile(tx,ty,tile,flipbits)
+function TileLayer:setTile(tx,ty,tile,orientation)
 	self:set(tx,ty,tile)
-	if flipbits then self._gridflip:set(tx,ty,flipbits) end
+	if tile and orientation then 
+		self._gridflip:set(tx,ty,orientation)
+	else 
+		self._gridflip:set(tx,ty,0)
+	end
 	self._redraw = true
 end
 ---------------------------------------------------------------------------------------------------
@@ -70,25 +75,41 @@ function TileLayer:flipTile(tx,ty, flipX,flipY)
 	
 	self._gridflip:set(tx,ty, flip)
 	self._redraw = true
+	return flip
 end
 ---------------------------------------------------------------------------------------------------
 -- rotate 90 degrees
-function TileLayer:rotateTile(tx,ty)
+-- Can specify amount of rotation (1x,2x,3x,...)
+function TileLayer:rotateTile(tx,ty,amount)
 	local flip = self._gridflip:get(tx,ty) or 0
 	
-	-- Amazing hack
-	if flip == 0 then flip = 5
-	elseif flip == 1 then flip = 4 
-	elseif flip == 2 then flip = 1
-	elseif flip == 3 then flip = 0 
-	elseif flip == 4 then flip = 7
-	elseif flip == 5 then flip = 6
-	elseif flip == 6 then flip = 3
-	elseif flip == 7 then flip = 2 
+	for i = 1,amount or 1 do
+		-- Amazing hack
+		if flip == 0 then flip = 5
+		elseif flip == 1 then flip = 4 
+		elseif flip == 2 then flip = 1
+		elseif flip == 3 then flip = 0 
+		elseif flip == 4 then flip = 7
+		elseif flip == 5 then flip = 6
+		elseif flip == 6 then flip = 3
+		elseif flip == 7 then flip = 2 
+		end
 	end
 	
 	self._gridflip:set(tx,ty, flip)
 	self._redraw = true
+	return flip
+end
+---------------------------------------------------------------------------------------------------
+-- Reset tile orientation
+function TileLayer:resetOrientation(tx,ty)
+	self._gridflip:set(tx,ty,0)
+	self._redraw = true
+end
+---------------------------------------------------------------------------------------------------
+-- Get tile orientation
+function TileLayer:getOrientation(tx,ty)
+	return self._gridflip:get(tx,ty)
 end
 ---------------------------------------------------------------------------------------------------
 function TileLayer:draw()

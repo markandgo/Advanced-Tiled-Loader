@@ -60,5 +60,8 @@
   <object x="160" y="128">
    <polyline points="0,0 -16,16 0,32 -16,32 -32,16 -48,32"/>
   </object>
+  <object x="186" y="58">
+   <polygon points="0,0 42,60 87,0 42,20"/>
+  </object>
  </objectgroup>
 </map>

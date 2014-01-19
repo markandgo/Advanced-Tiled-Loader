@@ -3,26 +3,26 @@ This code falls under the terms of the MIT license.
 The full license can be found in "license.txt".
 
 Copyright (c) 2011-2012 Casey Baxter
-Copyright (c) 2013 Minh Ngo
+Copyright (c) 2013-2014 Minh Ngo
 ]]
 
 ---------------------------------------------------------------------------------------------------
 -- -= ObjectLayer =-
 ---------------------------------------------------------------------------------------------------
 -- Setup
-TILED_LOADER_PATH  = TILED_LOADER_PATH or (...):match('^.+[%.\\/]')
-local Class        = require(TILED_LOADER_PATH .. 'Class')
-local Object       = require( TILED_LOADER_PATH .. "Object")
+local MODULE_PATH  = (...):match('^.+[%.\\/]')
+local Class        = require(MODULE_PATH .. 'Class')
+local Object       = require( MODULE_PATH .. "Object")
 
 local grey         = {128,128,128,255}
 
 local ObjectLayer  = Class "ObjectLayer" {}
 ---------------------------------------------------------------------------------------------------
 -- Creates and returns a new ObjectLayer
-function ObjectLayer:init(args)
-	local a = args
+function ObjectLayer:init(map,args)
+	local a = args or {}
 	
-	self.map        = a.map or error 'Must specify a map as an argument'
+	self.map        = map or error 'Must specify a map as an argument'
 	
 	-- OPTIONAL:
 	self.name       = a.name or 'Unnamed ObjectLayer'
@@ -44,9 +44,8 @@ end
 
 ---------------------------------------------------------------------------------------------------
 -- Creates a new object, automatically inserts it into the layer, and then returns it
-function ObjectLayer:newObject(args, position)
-	args.layer   = self
-	local object = Object:new(args)
+function ObjectLayer:newObject(x,y,gid,args, position)
+	local object = Object:new(self,x,y,gid,args)
    table.insert(self.objects, position or #self.objects+1, object) 
    self._redraw = true
    return object

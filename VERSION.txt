@@ -2,59 +2,14 @@ Advanced Tiled Loader
 --------------------------------------------------------------------------------------
 
 CHANGES:
-0.2.0F (2013/12/4)
-- Readded ability to limit draw range and many new methods
-- Added Class module to make it easier to handle classes
-- Changed Loader saving/loading to show traceback on error
-- Changed ellipses to actually be drawn as ellipses
-
-0.1.8F (2013/11/16)
-- Changed base64 to Baxter's base64
-- Fixed loading with Baxter's base64
-- Moved Loader table init code to top
-
-0.1.7F (2013/9/4)
-- Fixed storing path of loader in init.lua
-- Fixed path location of image stored in a TSX file
-
-0.1.6F (2013/8/14)
-- Fixed Grid:rectangle iterating when end interval is smaller than starting interval
-- Fixed transparency for layers/objectlayers
-- Changed objects with gid to draw with current color
-
-0.1.5F (2013/8/9)
-- Added TileLayer:clear
-- Changed TileLayer:setTile to accept nil to clear a tile
-- Fixed Map:toIso
-
-0.1.4F (2013/8/5)
-- Added support for Tiled 0.9 staggered orientation
-- Changed handling of TileLayer batch id's to be reliable
-- Removed serialize module and other small stuff
-
-0.1.3F (2013/8/4)
-- Added TileLayer:_addRedraw
-- Removed TileLayer:redrawTile
-- Changed (again) to TileLayer draw to allow batch bind/unbind when redrawing
-- Fixed (again) handling of trans attribute
-
-0.1.2F (2013/8/3)
-- Removed batch bind/unbind when drawing tilelayer because of
-  unaccounted crash(for now)
-
-0.1.1F (2013/8/3)
-- Added map saving support
-- Added basic ellipse support as a boolean value for objects
-- Changed tilelayer to bind/unbind spritebaches when redrawing list
-- Changed TileLayer to be a subclass of Grid like before
-- Changed loading/saving to return an error string as a second value
-- Changed map saving internal handling of attributes
-- Changed "element" field to reference a common variable "elementKey"
-  containing a user defineable value
-- Removed source field from TileSet
-
-0.1.0F (2013/8/1)
-- Complete revamp of code by Minh Ngo
+0.9.0F (2014/01/13)
+- (Fork) Public stable release
+- Added support for chunk loading for cooperative multitasking
+- Added staggered orientation support
+- Added Class module for easy extension
+- Improved loading speed
+- Removed support for saving maps
+- Numerous miscellaneous changes and rewrite
 
 0.12.1 (10/31/12)
 - TileLayer:drawAfterTile() has been reworked into TileLayer:newAfterTileFunction()

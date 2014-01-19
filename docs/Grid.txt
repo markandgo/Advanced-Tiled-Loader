@@ -1,0 +1,126 @@
+Grid
+
+The Grid class stores data in a 2d array.
+
+To load (assuming atl is the name of the source folder):
+Grid = require 'atl.Grid'
+
+========================================================================
+FUNCTIONS
+========================================================================
+Grid()
+Grid:new()
+
+	Creates a new Grid object. Only call this from the Grid class.
+
+	*********
+	Arguments
+	*********
+		
+	none
+	
+	#######
+	Returns
+	#######
+	
+	grid (Grid)
+		A new Grid object
+------------------------------------------------------------------------	
+:set(x,y,data)
+
+	Sets the data at the given coordinates.
+
+	*********
+	Arguments
+	*********
+	
+	x,y (integer)
+		The coordinates.
+		
+	data (any)
+		The data to assign.
+		
+	#######
+	Returns
+	#######
+	
+	none
+------------------------------------------------------------------------	
+:get(x,y)
+
+	Gets the data stored at coordinates (x,y).
+
+	*********
+	Arguments
+	*********
+	
+	x,y (integer)
+		The coordinates to look up.
+		
+	#######
+	Returns
+	#######
+	
+	data (any)
+		The data stored at (x,y).
+------------------------------------------------------------------------	
+:rectangle(x,y,x2,y2,skipNil)
+
+	Returns an iterator to loop through the rectangular range of cells.
+	The order is undefined and should not relied upon.
+
+	*********
+	Arguments
+	*********
+	
+	x,y (integer)
+		The top left corner of the rectangle.
+		
+	x2,y2 (integer)
+		The bottom right corner of the rectangle.
+		
+	skipNil (boolean)
+		"true" if the iterator should skip coordinates without any data.
+		The default is not "true" and iterate over all coordinates.
+		
+	#######
+	Returns
+	#######
+	
+	iterator (function)
+		The iterator.
+
+/////code start/////////////////////////////////////////////////////////
+
+for x,y,data in grid:rectangle(1,1,2,2) do
+	...
+end
+	
+/////code end///////////////////////////////////////////////////////////
+		
+------------------------------------------------------------------------	
+:iterate()
+
+	Returns an iterator to loop through all cells with data in the grid.
+
+	*********
+	Arguments
+	*********
+	
+	none
+		
+	#######
+	Returns
+	#######
+	
+	iterator (function)
+		The iterator.
+
+/////code start/////////////////////////////////////////////////////////
+
+for x,y,data in grid:iterate() do
+	...
+end
+	
+/////code end///////////////////////////////////////////////////////////
+------------------------------------------------------------------------	

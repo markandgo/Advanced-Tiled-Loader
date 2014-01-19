@@ -3,8 +3,30 @@ function love.load()
 	
 	function loadmap(filename)
 		-- Test loading and saving
-		map = assert( atl.Loader.load(filename) )
-		assert(atl.Loader.save(map, 'test/map.tmx'))
+		if filename then
+			-- Use small chunk size to show off loader
+			loader  = atl.Loader.load(filename,10)
+		end
+		local newmap,err = loader()
+		if err then error(err) end
+		if not newmap then 
+			finished_loading = false
+			return 
+		end
+		map              = newmap
+		finished_loading = true
+		
+		-- Reset scale/position/speed
+		x,y  = 0,0
+		scale= 1
+		speed= defaultspeed
+		
+		-- Make the background scroll slower than the foreground
+		-- Default value is 1 (default scroll speed)
+		-- 0.5 = scroll half as fast
+		local layer = map.layerOrder[1]
+		layer.parallaxX = .7
+		layer.parallaxY = .7
 		
 		-- Test properties
 		assert(map.properties.map == 1)
@@ -31,6 +53,9 @@ function love.load()
 	list_i      = 1 
 	
 	loadmap( list[list_i] )
+	repeat
+		loadmap()
+	until finished_loading
 	
 	-- Affects map presentation
 	x,y         = 0,0
@@ -50,14 +75,8 @@ function love.keypressed(k)
 		list_i = list_i > #list and 1 or list_i
 		
 		loadmap( list[list_i] )
-		
-		assert(atl.Loader.save(map, 'test/map.tmx'))
-		
-		x,y  = 0,0
-		scale= 1
-		speed= defaultspeed
 	end
-	if k == 'tab' and map.setDrawRange then
+	if k == 'tab' then
 		draw_all = not draw_all
 		if draw_all then
 			map:setDrawRange()
@@ -86,6 +105,8 @@ function love.mousepressed(x,y,b)
 end
 
 function love.update(dt)
+	if not finished_loading then loadmap() end
+	
 	if love.keyboard.isDown 'left' then
 		x = x + dt * -speed
 	end
@@ -99,28 +120,26 @@ function love.update(dt)
 		y = y + dt * speed
 	end
 	
-	if not draw_all and map.autoDrawRange then
+	if not draw_all then
 		map:autoDrawRange(x,y, scale, padding)
 	end
 	
-	local layer = map.layerOrder[1]
-	if layer then 
-		layer.parallaxX = .7
-		layer.parallaxY = .7
-		map.ox = x
-		map.oy = y
-	end
+	-- The parallax origin offsets
+	-- Use the opposite sign of love.graphics.translate
+	-- Example of slow background scrolling:
+	-- background: parallaxX = 0.5 and ox = 10 --> move 0.5*10 = 5
+	-- foreground: parallaxX = 1.0 and ox = 10 --> move 1.0*10 = 10
+	map.ox = x
+	map.oy = y
 end
 
 function love.draw()
 	love.graphics.push()
 	love.graphics.translate(400,300) -- center
 	love.graphics.scale(scale)
-	if map.setDrawRange then
-		love.graphics.translate(-x,-y)
-	end
+	love.graphics.translate(-x,-y)
 	
-	map:draw(-x,-y)
+	map:draw()
 	
 	love.graphics.pop()
 	if not draw_all then
@@ -138,6 +157,7 @@ function love.draw()
 		'Press space to switch map',
 		'Arrow keys to move, mouse wheel to zoom',
 		'Press x/y/r to flipx/flipy/rotate',
+		'Loading ...'..tostring(not finished_loading),
 	}
 	local complete_msg = table.concat(msg,'\n')
 	

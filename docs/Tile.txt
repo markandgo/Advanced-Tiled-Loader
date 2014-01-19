@@ -1,0 +1,64 @@
+Tile
+
+The Tile class contains the tile data.
+
+To load (assuming atl is the name of the source folder):
+Tile = require 'atl.Tile'
+
+========================================================================
+PROPERTIES
+========================================================================
+	.tileset    = The parent tileset.
+	.id         = The local id. Starts at 0.
+	.quad       = The quad for drawing the tile.
+	.properties = The tile properties.
+
+========================================================================
+FUNCTIONS
+========================================================================
+Tile(tileset,id,quad[,properties])
+Tile:new(tileset,id,quad[,properties])
+
+	Creates a new Tile object. Only call this from the Tile class.
+	
+	*********
+	Arguments
+	*********
+	
+	tileset (TileSet): 
+		The parent tileset.
+		
+	id (number): 
+		The local id of the tile in the tileset. It must be >= to 0.
+		For example, if it is the second tile in the tileset, then id = 1.
+	
+	quad (Quad):
+		The quad for drawing the tile.
+		
+	properties (table):
+		A table containing the tile properties.
+		
+	#######
+	Returns
+	#######
+	
+	tile (Tile)
+		A new Tile object.
+------------------------------------------------------------------------
+:draw(...)
+	
+	Draws the tile.
+	
+	*********
+	Arguments
+	*********
+	
+	...: 
+		The arguments used in love.graphics.draw(drawable,...)
+		
+	#######
+	Returns
+	#######
+	
+	nothing
+------------------------------------------------------------------------

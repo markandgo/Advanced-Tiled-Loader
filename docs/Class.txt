@@ -1,0 +1,212 @@
+Class
+
+The Class module contains the means to create classes. All classes in 
+ATL are derived from this. The module is also class commons compatible.
+
+To load (assuming atl is the name of the source folder):
+Class = require 'atl.Class'
+
+========================================================================
+EXAMPLE
+========================================================================
+
+--code start------------------------------------------------------------
+
+Counter = Class 'Counter' {
+	value = 1,
+	init = function(self,initial)
+		self.value = initial
+	end,
+	print = function(self)
+		print(self.value)
+	end,
+	increment = function(self)
+		self.value = self.value + 1
+	end,
+}
+
+counter1 = Counter()
+counter2 = Counter(5)
+
+counter1:increment()
+counter1:increment()
+
+counter2:increment()
+
+counter1:print() -- 3
+counter2:print() -- 6
+Counter:print()  -- 1
+
+--code end--------------------------------------------------------------
+
+The above example shows a simple Counter class. The first counter 
+inherits the value in the parent class. The second counter overrides the
+inherited value with the initial argument. In either case, the increment
+method changes the value in each object and has no effect on the parent
+class.
+
+========================================================================
+CLASS CONSTRUCTOR
+========================================================================
+class = Class 'name' {...}
+--or--
+class = Class('name')({...})
+
+Creates a new class.
+
+========================================================================
+OBJECT CONSTRUCTOR
+========================================================================
+object = class(...)
+object = class:new(...)
+
+Creates a new object which inherits from the class. Arguments are passed
+to the init callback if it exists: 
+
+	function class.init(object,...)
+		-- put custom code here
+	end
+	
+When defining the init callback of a subclass, the superclass.init needs 
+to be explicitly called if one wishes to use it:
+
+	function class.init(object,...)
+		superclass.init(object,...)
+		-- put custom code here
+	end
+	
+The subclass inherits the superclass init like any other values:
+	class.init = nil; 
+	object     = class() -- Calls superclass.init(object)
+========================================================================
+OBJECT BEHAVIOR
+========================================================================
+
+Object behaviors can be modified with metamethods. To do this, define 
+them in the class.
+
+Available metamethods:
+	add
+	sub
+	mul
+	div
+	mod
+	pow
+	unm
+	concat
+	len
+	eq
+	lt
+	le
+	call
+	tostring
+
+--code start------------------------------------------------------------
+
+Number = Class 'Number' {
+	value = 1,
+	init = function(self,initial)
+		self.value = initial
+	end,
+	print = function(self)
+		print(self.value)
+	end,
+	__add = function(self,other)
+		return Number(self.value + other.value)
+	end,
+	__call = function(self)
+		return self.value
+	end,
+}
+
+number1 = Number(1)
+number2 = Number(2)
+number3 = number1 + number2
+
+number3:print()    -- 3
+print( number3() ) -- 3
+
+--code end--------------------------------------------------------------
+
+
+========================================================================
+CLASS | OBJECT METHODS
+========================================================================
+:extend 'name' {...}
+:extend('name')({...})
+
+	Creates a subclass, which inherits from the class. Syntax is the same 
+	as the class constructor.
+------------------------------------------------------------------------	
+:type()
+
+	Returns the type of the object. All base classes have type "Object".
+
+	*********
+	Arguments
+	*********
+	
+	none
+		
+	#######
+	Returns
+	#######
+	
+	type (string)
+		A string containing the object type.
+------------------------------------------------------------------------	
+:typeOf(type)
+
+	Returns a boolean to check the object type. It will also check the 
+	super classes.
+	
+	*********
+	Arguments
+	*********
+	
+	type (string)
+		The string containing the type to check.
+		
+	#######
+	Returns
+	#######
+	
+	b (boolean)
+		True if the object type matches.
+------------------------------------------------------------------------
+:mixin(table)
+
+	Imports all data in the table to the object. Note that objects are
+	not cloned so tables and functions are passed by reference. The keys
+	"__index" and "__type" are not imported for internal control.
+
+	*********
+	Arguments
+	*********
+	
+	table (table)
+		The table containing the data to import.
+		
+	#######
+	Returns
+	#######
+	
+	nothing
+------------------------------------------------------------------------
+:clone()
+
+	Creates a complete copy of the object.
+
+	*********
+	Arguments
+	*********
+	
+	none
+		
+	#######
+	Returns
+	#######
+	
+	object (Object)
+		The duplicate object.
+------------------------------------------------------------------------

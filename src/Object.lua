@@ -3,11 +3,11 @@ This code falls under the terms of the MIT license.
 The full license can be found in "license.txt".
 
 Copyright (c) 2011-2012 Casey Baxter
-Copyright (c) 2013 Minh Ngo
+Copyright (c) 2013-2014 Minh Ngo
 ]]
 
-TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]')
-local Class      = require(TILED_LOADER_PATH .. 'Class')
+local MODULE_PATH= (...):match('^.+[%.\\/]')
+local Class      = require(MODULE_PATH .. 'Class')
 ---------------------------------------------------------------------------------------------------
 -- -= Object =-
 ---------------------------------------------------------------------------------------------------
@@ -16,23 +16,24 @@ local Object = Class "Object" {}
 ---------------------------------------------------------------------------------------------------
 
 -- Returns a new Object
-function Object:init(args)
-	local a = args
+function Object:init(layer,x,y,gid,args)
+	local a = args or {}
 	
-	self.layer     = a.layer
+	self.x         = x
+	self.y         = y
+	self.layer     = layer
+	self.gid       = gid
+	
+	
+	-- OPTIONAL:
 	self.polygon   = a.polygon
 	self.polyline  = a.polyline
 	self.ellipse   = a.ellipse -- boolean
-	self.gid       = a.gid
-	
-	-- OPTIONAL:
 	
 	self.name      = a.name or ''
 	self.type      = a.type or ''
 	
 	self.drawmode  = a.drawmode or 'line'
-	self.x         = a.x or 0
-	self.y         = a.y or 0
 	self.width     = a.width or 0
 	self.height    = a.height or 0
 	self.visible   = (a.visible == nil and true) or a.visible
@@ -40,7 +41,7 @@ function Object:init(args)
 	
 	-- INIT:
 	
-	self._bbox     = {0000}
+	self._bbox     = {0,0,0,0}
 	
 	Object.updateAABB(self)
 end
@@ -87,6 +88,8 @@ function Object:updateAABB()
 end
 ---------------------------------------------------------------------------------------------------
 -- Draw the object.
+local h_to_diag = 1 / 2^.5
+local octant    = math.pi / 4
 function Object:draw()
 
    if not self.visible then return end
@@ -102,12 +105,14 @@ function Object:draw()
 	
 	if isIso and not self.gid then
 --[[
-	length of tile diagonal
-		in isometric coordinates: sqrt(th*th + th*th) = sqrt(2) * th = a
-	x is the scale factor for 
-		diagonal to equal tileheight: a * x = th
-		x = sqrt(2) / 2
-	the height to width ratio = th/tw
+	length of tile diagonal in isometric coordinates: 
+		sqrt(th*th + th*th) = sqrt(2) * th = a
+	x is the scale factor for diagonal to equal tileheight:
+		a * x = th
+		x     = sqrt(2) / 2
+	y is the scale factor for the diagonal to equal tilewidth:
+		a * y = tw
+		y     = tw/a = tw/(th *sqrt(2)) = tw/th * x
 	
 		  th
 		-------
@@ -117,12 +122,10 @@ function Object:draw()
 		-------
 ]]
 		
-		local h_ratio   = th/tw
-		local h_to_diag = 1 / 2^.5
+		local w_ratio   = tw/th
 
-		love.graphics.scale(1,h_ratio)
-		love.graphics.scale(h_to_diag/h_ratio)
-		love.graphics.rotate(math.pi / 4)
+		love.graphics.scale(h_to_diag*w_ratio,h_to_diag)
+		love.graphics.rotate(octant)
 	elseif self.gid then
 		x,y = map:fromIso(x/th,y/th)
 	end

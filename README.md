@@ -14,6 +14,14 @@ Supported features include:
 * zlib/gzip compression
 * Isometric maps
 * Flipped and rotated tiles
-* Saving loaded maps
 
-Complete overhaul of Kadoba's Advanced Tiled Loader
+This is a fork of Kadoba's Advanced Tiled Loader.
+
+New features include:
+* Chunk loading for cooperative multitasking
+* Much faster loading
+* Staggered map
+* Extendable class system
+
+Stable release:
+[v0.9.0F](https://github.com/markandgo/Advanced-Tiled-Loader/releases/tag/v0.9.0F)

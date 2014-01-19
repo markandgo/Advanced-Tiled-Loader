@@ -3,22 +3,24 @@ This code falls under the terms of the MIT license.
 The full license can be found in "license.txt".
 
 Copyright (c) 2011-2012 Casey Baxter
-Copyright (c) 2013 Minh Ngo
+Copyright (c) 2013-2014 Minh Ngo
 ]]
 
 ---------------------------------------------------------------------------------------------------
 -- -= Loader =-
 ---------------------------------------------------------------------------------------------------
+-- 0.8 compatibility
+local createDirectory = love.filesystem.mkdir or love.filesystem.createDirectory
 
 -- Define path so lua knows where to look for files.
-TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]') or ''
-local base64     = require(TILED_LOADER_PATH .. 'Base64')
-local xmlparser  = require(TILED_LOADER_PATH .. 'external.xml')
-local deflate    = require(TILED_LOADER_PATH ..'external.deflate')
-local Map        = require(TILED_LOADER_PATH .. "Map")
-local TileSet    = require(TILED_LOADER_PATH .. "TileSet")
-local TileLayer  = require(TILED_LOADER_PATH .. "TileLayer")
-local ObjectLayer= require(TILED_LOADER_PATH .. "ObjectLayer")
+local MODULE_PATH= (...):match('^.+[%.\\/]') or ''
+local base64     = require(MODULE_PATH .. 'Base64')
+local xmlparser  = require(MODULE_PATH .. 'external.xml')
+local deflate    = require(MODULE_PATH ..'external.deflate')
+local Map        = require(MODULE_PATH .. "Map")
+local TileSet    = require(MODULE_PATH .. "TileSet")
+local TileLayer  = require(MODULE_PATH .. "TileLayer")
+local ObjectLayer= require(MODULE_PATH .. "ObjectLayer")
 local imageCache = setmetatable({},{__mode= 'v'})
 local elementkey = '__element' -- key for element name
 
@@ -29,12 +31,12 @@ local allowed_property = {
 }
 
 local Loader = {
-	filterMin = 'nearest', 
+	filterMin = 'linear', 
 	filterMag = 'nearest',
 }
 
 ---------------------------------------------------------------------------------------------------
--- PATH FUNCTIONS
+-- UTILITY
 
 local function getPathComponents(path)
 	local dir,name,ext = path:match('^(.-)([^\\/]-)%.?([^\\/%.]*)$')
@@ -53,11 +55,28 @@ local stripExcessSlash = function(path)
 	return path:gsub('[\\/]+','/')
 end
 
+-- Convert string bytes to numbers
+local function byteToNumber(str)
+	local num = 0
+	local len = #str
+	for i = 1,len do
+		num = num + string.byte(str,i) * 256^(i-1)
+	end
+	return num
+end
+
 ---------------------------------------------------------------------------------------------------
 -- XML HANDLER
 
 local handler   = {}
 handler.__index = handler
+
+handler.new = function()
+	local h    = {root = {},stack = {len = 1}}
+	h.stack[1] = h.root
+	
+	return setmetatable(h,handler)
+end
 
 handler.starttag = function(self,name,attr)
 	local stack   = self.stack
@@ -69,6 +88,7 @@ handler.starttag = function(self,name,attr)
 	end
 	stack.len = stack.len + 1
 	table.insert(self.stack,element)
+	Loader._chunkCheck(self)
 end
 
 handler.endtag = function(self,name,attr)
@@ -82,32 +102,32 @@ end
 handler.text = function(self,text)
 	table.insert(self.stack[self.stack.len],1,text)
 end
-
-local function newHandler()
-	local h    = {root = {},stack = {len = 1}}
-	h.stack[1] = h.root
-	
-	return setmetatable(h,handler)
-end
 ---------------------------------------------------------------------------------------------------
--- Convert string bytes to numbers
-local function byteToNumber(str)
-	local num = 0
-	local len = #str
-	for i = 1,len do
-		num = num + string.byte(str,i) * 256^(i-1)
-	end
-	return num
-end
----------------------------------------------------------------------------------------------------
--- should return map else error as second message
+-- should return map else false and error string
 
-function Loader.load(filename)
-	local ok,tmxmap = xpcall(function()
-		return Loader._expandMap( Loader.parseXML(filename) )
+function Loader._load(filename,chunk_size)
+	local ok,map = xpcall(function()
+		local tmxmap = Loader._parseTMX(filename,chunk_size)
+		-- Store the chunk stuff for streaming in the parsed table!
+		tmxmap.chunk_size   = chunk_size
+		tmxmap.chunk_counter= 0
+		return Loader._expandMap( tmxmap )
 	end,debug.traceback)
-	if not ok then return nil,tmxmap end
-	return tmxmap
+	if not ok then local error = map; return ok,error end
+	return map
+end
+
+function Loader.load(filename,chunk_size)
+	if chunk_size then
+		assert(chunk_size > 0, 'Chunk size must be greater than 0!')
+		return coroutine.wrap(function()
+			local map,err = Loader._load(filename,chunk_size)
+			while true do
+				coroutine.yield(map,err)
+			end
+		end)
+	end
+	return Loader._load(filename)
 end
 ---------------------------------------------------------------------------------------------------
 -- should return true if successful else error as second message
@@ -119,8 +139,19 @@ function Loader.save(map,filename)
 	end,debug.traceback)
 end
 ---------------------------------------------------------------------------------------------------
-function Loader.parseXML(filename)
-	local h        = newHandler()
+function Loader._chunkCheck(object)
+	if coroutine.running() then
+		object.chunk_counter = object.chunk_counter + 1
+		if object.chunk_counter % object.chunk_size == 0 then
+			coroutine.yield()
+		end
+	end
+end
+---------------------------------------------------------------------------------------------------
+function Loader._parseTMX(filename,chunk_size)
+	local h        = handler.new()
+	h.chunk_size   = chunk_size
+	h.chunk_counter= 0
 	local tmxparser= xmlparser(h)
 	local str,err  = love.filesystem.read(filename)
 	assert(str,err)
@@ -135,12 +166,9 @@ end
 ---------------------------------------------------------------------------------------------------
 function Loader._expandMap(tmxmap)
 	local a = tmxmap
-	local map = Map:new{
-		width      = a.width,
-		height     = a.height,
-		tilewidth  = a.tilewidth,
-		tileheight = a.tileheight,
-		
+	local map = Map:new(
+		a.width,a.height,a.tilewidth,a.tileheight,
+	{
 		orientation= a.orientation or 'orthogonal',
 		layers     = nil, -- indexed by name
 		tilesets   = nil, -- indexed by name
@@ -149,7 +177,7 @@ function Loader._expandMap(tmxmap)
 		properties = nil,
 		
 		directory  = tmxmap.directory,
-	}
+	})
 	
 	for i,element in ipairs(tmxmap) do
 		local etype = element[elementkey]
@@ -163,7 +191,7 @@ function Loader._expandMap(tmxmap)
 			map.tilesets[tileset.name] = tileset
 			for i = 0,#tileset.tiles do
 				local tile = tileset.tiles[i]
-				map.tiles[tile.gid] = tile
+				map.tiles[tileset.firstgid+tile.id] = tile
 			end
 			
 		elseif etype == 'layer' or etype == 'objectgroup' then
@@ -195,44 +223,25 @@ end
 ---------------------------------------------------------------------------------------------------
 function Loader._expandTileSet(tmxtileset,tmxmap)
 	if tmxtileset.source then
-		local h        = newHandler()
-		local tsxparser= xmlparser(h)
-		local path     = stripExcessSlash( stripUpDirectory(tmxmap.directory..tmxtileset.source) )
-		local str,err  = love.filesystem.read(path)
-		assert(str,err)
-		tsxparser:parse(str)
-		local tsxtable = h.root[1]
-		
+		local path         = stripExcessSlash( stripUpDirectory(tmxmap.directory..tmxtileset.source) )
+		local tsxtable,err = Loader._parseTMX(path,tmxmap.chunk_size)
+		assert(tsxtable,err)
 		for i,v in pairs(tsxtable) do
 			tmxtileset[i] = v
 		end
 	end
 	
-	local a = tmxtileset
-	local tileset = TileSet:new{
-		firstgid   = a.firstgid,
-		tilewidth  = a.tilewidth,
-		tileheight = a.tileheight,
-		
-		imagesource= nil,
-		image      = nil,
-		trans      = a.trans,
-		-- tiles      = a.tiles, -- indexed by local id
-		
-		name       = a.name,
-		spacing    = a.spacing ,
-		margin     = a.margin,
-		offsetX    = nil,
-		offsetY    = nil,
-		properties = nil,
-	}
+	local t             = tmxtileset
+	local args          = {name = t.name,spacing = t.spacing,margin = t.margin}
+	local tileproperties= {}
+	
 	for i,element in ipairs(tmxtileset) do
 		local etype = element[elementkey]
 		if etype == 'tileoffset' then
-			tileset.offsetX = element.x
-			tileset.offsetY = element.y
+			args.offsetX = element.x
+			args.offsetY = element.y
 		elseif etype == 'image' then
-			-- The image stored in the TSX file is relative to its location
+			-- The image source is relative to the location of the TSX file
 			-- The source is changed to be relative to the location of the TMX file
 			if tmxtileset.source then
 				local dir_of_tsx = getPathComponents( tmxtileset.source )
@@ -241,20 +250,33 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 					element.source )
 			end
 			Loader._expandImage(element,tmxmap)
-			tileset.image      = element.image
-			tileset.imagesource= element.source
-			tileset.trans      = element.trans
-			tileset.tiles      = tileset:makeTiles()
+			args.image      = element.image
+			args.imagesource= element.source
+			args.trans      = element.trans
 		elseif etype == 'tile' then
 			for i,v in ipairs(element) do
 				if v[elementkey] == 'properties' then
-					tileset.tiles[element.id].properties = Loader._expandProperties(v)
+					tileproperties[element.id] = Loader._expandProperties(v)
 				end
 			end
 		elseif etype == 'properties' then
-			tileset.properties = Loader._expandProperties(element)
+			args.properties = Loader._expandProperties(element)
 		end
 	end
+	
+	local tileset = TileSet:new(
+		t.tilewidth,
+		t.tileheight,
+		args.image,
+		t.firstgid,
+		args)
+		
+	-- Import tile properties
+	local tiles = tileset.tiles
+	for id,properties in pairs(tileproperties) do
+		tiles[id].properties = properties
+	end
+		
 	return tileset
 end
 ---------------------------------------------------------------------------------------------------
@@ -346,18 +368,18 @@ function Loader._streamLayerData(tmxlayer,tmxmap)
 end
 ---------------------------------------------------------------------------------------------------
 function Loader._expandTileLayer(tmxlayer,tmxmap,map)
-	local layer = TileLayer:new{
-		map       = map,
+	local layer = TileLayer:new(map,{
 		name      = tmxlayer.name or ('Layer '..#map.layerOrder+1),
 		opacity   = tmxlayer.opacity,
 		visible   = (tmxlayer.visible or 1) == 1,
 		properties= nil,
-	}
+	})
 	
 	for i,element in ipairs(tmxlayer) do
 		local etype = element[elementkey]
 		if etype == 'data' then
 			for gid,x,y,flipbits in Loader._streamLayerData(tmxlayer,tmxmap) do
+				Loader._chunkCheck(tmxmap)
 			
 				if gid ~= 0 then
 					local tile = map.tiles[gid]
@@ -373,8 +395,7 @@ function Loader._expandTileLayer(tmxlayer,tmxmap,map)
 end
 ---------------------------------------------------------------------------------------------------
 function Loader._expandObjectGroup(tmxlayer,tmxmap,map)
-	local layer = ObjectLayer:new{
-		map        = map,
+	local layer = ObjectLayer:new(map,{
 		name       = tmxlayer.name or ('Layer '..#map.layerOrder+1),
 		opacity    = tmxlayer.opacity,
 		visible    = (tmxlayer.visible or 1)== 1,
@@ -382,7 +403,7 @@ function Loader._expandObjectGroup(tmxlayer,tmxmap,map)
 		color      = nil,
 		properties = nil,
 		objects    = nil,
-	}
+	})
 	
 	if tmxlayer.color then
 		local color = {}
@@ -395,15 +416,13 @@ function Loader._expandObjectGroup(tmxlayer,tmxmap,map)
 	for i,element in ipairs(tmxlayer) do
 		local etype = element[elementkey]
 		if etype == 'object' then
+			Loader._chunkCheck(tmxmap)
 			
 			local e = element
 			
 			local args = {
 				name      = e.name,
 				type      = e.type,
-				gid       = e.gid,
-				x         = e.x,
-				y         = e.y,
 				width     = e.width,
 				height    = e.height,
 				visible   = (e.visible == nil and true) or e.visible,
@@ -431,7 +450,7 @@ function Loader._expandObjectGroup(tmxlayer,tmxmap,map)
 				end
 			end
 			
-			layer:newObject(args)
+			layer:newObject(e.x,e.y,e.gid,args)
 			
 		elseif etype == 'properties' then
 			layer.properties = Loader._expandProperties(element)
@@ -439,286 +458,6 @@ function Loader._expandObjectGroup(tmxlayer,tmxmap,map)
 	end
 	
 	return layer
-end
----------------------------------------------------------------------------------------------------
-function Loader._compactMap(map)
-	local tmxmap = {
-		[elementkey]= 'map',
-		attr = {
-			version     = '1.0',
-			orientation = map.orientation,
-			width       = map.width,
-			height      = map.height,
-			tilewidth   = map.tilewidth,
-			tileheight  = map.tileheight,
-		},
-	}
-	
-	-- do tilesets
-	local tilesets = {}
-	for name,tileset in pairs(map.tilesets) do
-		table.insert( tilesets, Loader._compactTileSet(tileset) )
-	end
-	table.sort(tilesets,function(a,b)
-		return a.attr.firstgid < b.attr.firstgid
-	end)
-	for _,tmxtileset in ipairs(tilesets) do
-		table.insert( tmxmap, tmxtileset )
-	end
-	
-	-- do layers
-	for i,layer in ipairs(map.layerOrder) do
-		if layer.class == 'TileLayer' then
-			table.insert( tmxmap, Loader._compactTileLayer(layer) )
-		end
-		if layer.class == 'ObjectLayer' then
-			table.insert( tmxmap, Loader._compactObjectGroup(layer) )
-		end
-	end
-	
-	-- do properties
-	Loader._insertProperties( tmxmap, map.properties )
-	
-	return tmxmap
-end
----------------------------------------------------------------------------------------------------
-function Loader._insertProperties(parent,properties)
-	if not (properties and next(properties)) then return end
-
-	local tmxproperties = {
-		[elementkey] = 'properties',
-	}
-	for name,value in pairs(properties) do
-		if allowed_property[ type(name) ] and allowed_property[ type(value) ] then
-			table.insert(tmxproperties, {
-				[elementkey]= 'property',
-				attr        = {
-					name = tostring(name),
-					value= tostring(value),
-				},
-			})
-		end
-	end
-	
-	table.insert(parent,tmxproperties)
-end
----------------------------------------------------------------------------------------------------
-function Loader._compactTileSet(tileset)
-	local t = tileset
-	local tmxtileset = {
-		[elementkey]= 'tileset',
-		attr = {
-			firstgid    = t.firstgid,
-			name        = t.name,
-			tilewidth   = t.tilewidth,
-			tileheight  = t.tileheight,
-			spacing     = t.spacing,
-			margin      = t.margin,
-		},
-		------------------------
-		{
-			[elementkey]= 'tileoffset',
-			attr = {
-				x           = t.offsetX,
-				y           = t.offsetY,
-			},
-		},
-		{
-			[elementkey]= 'image',
-			attr = {
-				source      = t.imagesource,
-				trans       = t.trans,
-				width       = t.image:getWidth(),
-				height      = t.image:getHeight(),
-			},
-		},
-	}
-	
-	for id = 0,#t.tiles do
-		local tile = t.tiles[id]
-		if next(tile.properties) then
-			local tmxtile = {
-				[elementkey]= 'tile',
-				attr        = {
-					id = id,
-				},
-			}
-			Loader._insertProperties(tmxtile,tile.properties)
-			table.insert(tmxtileset,tmxtile)
-		end
-	end
-	
-	Loader._insertProperties( tmxtileset, t.properties )
-	
-	return tmxtileset
-end
----------------------------------------------------------------------------------------------------
-function Loader._compactTileLayer(tilelayer)
-	local t = tilelayer
-	local tmxtilelayer = {
-		[elementkey]= 'layer',
-		attr = {
-			name        = t.name,
-			opacity     = t.opacity,
-			visible     = t.visible and 1 or 0,
-			width       = tilelayer.map.width,
-			height      = tilelayer.map.height,
-		},
-		---------------------
-		Loader._compactLayerData(tilelayer),
-	}
-	Loader._insertProperties( tmxtilelayer, t.properties )
-	
-	return tmxtilelayer
-end
----------------------------------------------------------------------------------------------------
-local bitoffset = 2^29
-
-function Loader._compactLayerData(tilelayer)
-	local w,h = tilelayer.map.width,tilelayer.map.height
-	local rows= {}
-	
-	for ty = 0,h-1 do
-		local row = {}
-		for tx = 0,w-1 do
-			local tile        = tilelayer(tx,ty)
-			local gid,flipbits= 0,0
-			if tile then
-				gid      = tile.gid or gid 
-				flipbits = tilelayer._gridflip:get(tx,ty) or flipbits
-			end
-			table.insert(row, flipbits * bitoffset + gid)
-		end
-		table.insert(rows, table.concat(row,','))
-	end
-	
-	return {
-		[elementkey]= 'data',
-		attr        = { encoding = 'csv'},
-		-----------------
-		table.concat(rows, ',\n')
-	}
-end
----------------------------------------------------------------------------------------------------
-function Loader._compactObjectGroup(objectlayer)
-	local o = objectlayer
-	
-	local color = '#'
-	for i = 1,3 do
-		local channel= string.format('%.2x',o.color[i])
-		color        = color .. channel
-	end
-	
-	local tmxobjectlayer = {
-		[elementkey]= 'objectgroup',
-		attr = {
-			name        = o.name,
-			color       = color,
-			opacity     = o.opacity,
-			visible     = o.visible and 1 or 0,
-			width       = o.map.width,
-			height      = o.map.height,
-		},
-	}
-	Loader._insertProperties(tmxobjectlayer,o.properties)
-	
-	for i,object in ipairs(o.objects) do
-		local o = object
-		local tmxobject = {
-			[elementkey]= 'object',
-			attr = {
-				name        = o.name,
-				type        = o.type,
-				x           = o.x,
-				y           = o.y,
-				width       = o.width,
-				height      = o.height,
-				gid         = o.gid,
-				visible     = o.visible and 1 or 0,
-			},
-		}
-		Loader._insertProperties(tmxobject,o.properties)
-		
-		local subtype = o.ellipse and 'ellipse' or 
-			o.polygon and 'polygon' or 
-			o.polyline and 'polyline'
-		
-		if subtype then
-			local tmxtype = {
-					[elementkey]= subtype,
-					attr        = {},
-				}
-			if subtype ~= 'ellipse' then
-				local points = {}
-				for i = 1,#o[subtype],2 do
-					table.insert(points,o[subtype][i]..','..o[subtype][i+1])
-				end
-				tmxtype.attr.points = table.concat(points,' ')
-			end
-			table.insert(tmxobject,tmxtype)
-		end
-		
-		table.insert(tmxobjectlayer, tmxobject)
-	end
-	
-	return tmxobjectlayer
-end
----------------------------------------------------------------------------------------------------
--- attributes have non numeric keys
--- subelements have numeric keys
-
-function Loader._saveAsXML(tmxmap,filename)
-	local dir   = getPathComponents(filename)
-	local dir_ok= love.filesystem.mkdir( dir )
-	
-	if not dir_ok then error('Unable to make directory: '..dir) end
-	if love.filesystem.isDirectory(filename) then
-		error( string.format('Unable to save, \"%s\" is a directory',filename) )
-	end
-	
-	
-	local file = love.filesystem.newFile(filename)
-	
-	file:open 'w'
-	file:write '<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n'
-	
-	local recursive
-	recursive = function(t,level)
-		local element = t[elementkey]
-		local tabs    = string.rep('\t',level)
-		
-		file:write (tabs..'<'..element)
-		-- attributes
-		if t.attr then
-			for i,v in pairs(t.attr) do
-				local itype = type(i)
-				local vtype = type(v)
-				
-				if v ~= '' and allowed_property[ vtype ] and allowed_property[itype] then
-					file:write( string.format( ' %s=%q ',tostring(i),tostring(v) ) )
-				end
-			end
-		end
-		-- write subelements else terminate tag
-		if t[1] then 
-			file:write ('>\n')
-			-- subelements/text
-			for i,v in ipairs(t) do
-				local vtype = type(v)
-				
-				if vtype == 'table' then
-					recursive(v,level+1)
-				else
-					file:write(tostring(v)..'\n')
-				end
-			end
-			file:write (tabs..'</'..element..'>\n')
-		else
-			file:write ('/>\n')
-		end
-	end
-	recursive(tmxmap,0)
-	file:close()
 end
 ---------------------------------------------------------------------------------------------------
 return Loader

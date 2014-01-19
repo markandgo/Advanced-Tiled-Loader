@@ -3,43 +3,46 @@ This code falls under the terms of the MIT license.
 The full license can be found in "license.txt".
 
 Copyright (c) 2011-2012 Casey Baxter
-Copyright (c) 2013 Minh Ngo
+Copyright (c) 2013-2014 Minh Ngo
 ]]
 
-TILED_LOADER_PATH= TILED_LOADER_PATH or (...):match('^.+[%.\\/]')
-local Class      = require(TILED_LOADER_PATH .. 'Class')
-local Tile       = require(TILED_LOADER_PATH..'Tile')
-local TileSet    = require(TILED_LOADER_PATH..'TileSet')
-local TileLayer  = require(TILED_LOADER_PATH..'TileLayer')
-local ObjectLayer= require(TILED_LOADER_PATH..'ObjectLayer')
+local MODULE_PATH= (...):match('^.+[%.\\/]')
+local Class      = require(MODULE_PATH .. 'Class')
+local Tile       = require(MODULE_PATH..'Tile')
+local TileSet    = require(MODULE_PATH..'TileSet')
+local TileLayer  = require(MODULE_PATH..'TileLayer')
+local ObjectLayer= require(MODULE_PATH..'ObjectLayer')
 
 local floor = math.floor
+
+-- 0.8/0.9+ compatibility
+local getWindow = love.graphics.getMode or love.window.getMode
 
 local Map   = Class "Map" {}
 Map.__call  = function(self, layername) return self.layers[layername] end
 ---------------------------------------------------------------------------------------------------
-function Map:init(args)
-	local a = args
+function Map:init(width,height,tilewidth,tileheight,args)
+	local a = args or {}
 	
-	self.width      = a.width
-	self.height     = a.height
-	self.tilewidth  = a.tilewidth
-	self.tileheight = a.tileheight
+	self.width      = width
+	self.height     = height
+	self.tilewidth  = tilewidth
+	self.tileheight = tileheight
 	
 	-- OPTIONAL:
 	self.orientation= a.orientation or 'orthogonal'
-	self.ox         = a.ox or 0 -- origin offset affects parallax
+	self.ox         = a.ox or 0 -- parallax origin offset
 	self.oy         = a.oy or 0
 	self.layers     = a.layers or {} -- indexed by name
 	self.tilesets   = a.tilesets or {} -- indexed by name
 	self.layerOrder = a.layerOrder or {} -- indexed by draw order
 	self.tiles      = a.tiles or {} -- indexed by gid
 	self.properties = a.properties or {}
-	self._drawrange = nil -- {xyx2y2} no drawrange means draw everything
+	self._drawrange = nil -- {x,y,x2,y2} no drawrange means draw everything
 end
 ---------------------------------------------------------------------------------------------------
-function Map:newTileSet(args)
-	local tileset= TileSet:new(args)
+function Map:newTileSet(tilewidth,tileheight,image,firstgid,args)
+	local tileset= TileSet:new(tilewidth,tileheight,image,firstgid,args)
 	local name   = tileset.name
 	if self.tilesets[name] then 
 	  error(  string.format("Map:newTileSet - A tile set named \"%s\" already exists.", name) )
@@ -53,8 +56,7 @@ end
 ---------------------------------------------------------------------------------------------------
 function Map:newTileLayer(args,position)
 	position   = position or #self.layerOrder+1
-	args.map   = self
-	local layer= TileLayer:new(args)
+	local layer= TileLayer:new(self,args)
 	local name = layer.name
    if self.layers[name] then 
       error( string.format("Map:newTileLayer - A layer named \"%s\" already exists.", name) )
@@ -67,8 +69,7 @@ end
 ---------------------------------------------------------------------------------------------------
 function Map:newObjectLayer(args, position)
 	position   = position or #self.layerOrder+1
-	args.map   = self
-	local layer= ObjectLayer:new(args)
+	local layer= ObjectLayer:new(self,args)
 	local name = layer.name
    if self.layers[name] then 
       error( string.format("Map:newObjectLayer - A layer named \"%s\" already exists.", name) )
@@ -79,12 +80,8 @@ function Map:newObjectLayer(args, position)
    return layer
 end
 ---------------------------------------------------------------------------------------------------
-function Map:newCustomLayer(args, position)
+function Map:newCustomLayer(position)
 	local layer = {class = 'CustomLayer', map = self}
-	for i,v in pairs(args) do
-		layer[i] = v
-	end
-	
 	if self.layers[layer.name] then 
       error( string.format("Map:newCustomLayer - A layer named \"%s\" already exists.", name) )
    end
@@ -152,9 +149,8 @@ function Map:setDrawRange(x,y,x2,y2)
 	end
 end
 ---------------------------------------------------------------------------------------------------
--- cx,cy is the local pixel coordinate to center 
+-- cx,cy is the center of the untransformed map coordinates
 -- scale: scale of map
-local getWindow = love.graphics.getMode or love.window.getMode
 function Map:autoDrawRange(cx,cy, scale, padding)
 	local w,h    = getWindow()
 	local hw,hh  = w/2,h/2

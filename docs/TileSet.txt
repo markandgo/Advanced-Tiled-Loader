@@ -1,0 +1,122 @@
+TileSet
+
+The TileSet class contains all the data for drawing a set of tiles.
+
+To load (assuming atl is the name of the source folder):
+TileSet = require 'atl.TileSet'
+
+========================================================================
+PROPERTIES
+========================================================================
+	.tilewidth  = The width of a tile.
+	.tileheight = The height of a tile.
+	.image      = The Image object containing the tileset.
+	.firstgid   = All tiles' gid in the tileset count from this number.
+	.name       = The name of the tileset.
+	.imagesource= The file path of the image. Necessary when saving.
+	.trans      = The color to be treated as transparent. 
+	              Format is "ff00ff".
+	.spacing    = The spacing between tiles in the tileset.
+	.margin     = The margin around the tiles in the tileset.
+	.offsetX    = The horizontal offset to be applied when drawing tiles.
+	.offsetY    = The vertical offset to be applied when drawing tiles.
+	.properties = The tileset properties.
+	.tiles      = The tiles indexed by their local id. The first tile
+	              starts at local id 0.
+	              
+
+========================================================================
+FUNCTIONS
+========================================================================
+TileSet(tilewidth,tileheight,image,firstgid[,args])
+TileSet:new(tilewidth,tileheight,image,firstgid[,args])
+
+	Creates a new TileSet object. Only call this from the TileSet class.
+
+	*********
+	Arguments
+	*********
+	
+	tilewidth (number): 
+		The width of a tile.
+	
+	tileheight (number):
+		The height of a tile.
+		
+	image (Image):
+		The Image object containg the tileset.
+		
+	firstgid (number):
+		All tiles' gid in the tileset count from this number.
+		
+	args (table):
+		A table for optional arguments. The arguments [default] are:
+		
+		name       = ["Unnamed TileSet"] 
+		imagesource= [nil] 
+		trans      = [nil] 
+		spacing    = [0] 
+		margin     = [0] 
+		offsetX    = [0] 
+		offsetY    = [0] 
+		properties = [nil] 
+		
+	#######
+	Returns
+	#######
+	
+	tileset (TileSet)
+		A new TileSet object
+------------------------------------------------------------------------	
+:columns()
+
+	Gets the number of columns of tiles.
+
+	*********
+	Arguments
+	*********
+	
+	none
+		
+	#######
+	Returns
+	#######
+	
+	columns (number)
+		The number of columns of tiles in the tileset.
+------------------------------------------------------------------------	
+:rows()
+
+	Gets the number of rows of tiles.
+
+	*********
+	Arguments
+	*********
+	
+	none
+		
+	#######
+	Returns
+	#######
+	
+	rows (number)
+		The number of rows of tiles in the tileset.
+------------------------------------------------------------------------	
+tileset(id)
+
+	Gets the tile with the given local id.
+
+	*********
+	Arguments
+	*********
+	
+	id (number)
+		The local id of the tile.
+		
+	#######
+	Returns
+	#######
+	
+	tile (Tile)
+		The matching tile.
+------------------------------------------------------------------------	
