@@ -21,6 +21,7 @@ local Map        = require(MODULE_PATH .. "Map")
 local TileSet    = require(MODULE_PATH .. "TileSet")
 local TileLayer  = require(MODULE_PATH .. "TileLayer")
 local ObjectLayer= require(MODULE_PATH .. "ObjectLayer")
+local ImageLayer = require(MODULE_PATH .. "ImageLayer")
 local imageCache = setmetatable({},{__mode= 'v'})
 local elementkey = '__element' -- key for element name
 
@@ -194,9 +195,10 @@ function Loader._expandMap(tmxmap)
 				map.tiles[tileset.firstgid+tile.id] = tile
 			end
 			
-		elseif etype == 'layer' or etype == 'objectgroup' then
+		elseif etype == 'layer' or etype == 'objectgroup' or etype == 'imagelayer' then
 			local layer = etype == 'layer' and Loader._expandTileLayer(element,tmxmap,map)
-			or Loader._expandObjectGroup(element,tmxmap,map)
+			or etype == 'objectgroup' and Loader._expandObjectGroup(element,tmxmap,map)
+			or Loader._expandImageLayer(element,tmxmap,map)
 			
 			if map.layers[layer.name] then 
 				error( string.format( 'A layer named \"%s\" already exists', layer.name ) )
@@ -458,6 +460,30 @@ function Loader._expandObjectGroup(tmxlayer,tmxmap,map)
 	end
 	
 	return layer
+end
+---------------------------------------------------------------------------------------------------
+function Loader._expandImageLayer(tmxlayer,tmxmap,map)
+	local properties,imagelayer,image_element
+
+	for i,element in ipairs(tmxlayer) do
+		local etype = element[elementkey]
+		if etype == 'image' then
+			image_element = element
+			Loader._expandImage(element,tmxmap)
+		elseif etype == 'properties' then
+			properties = Loader._expandProperties(element)
+		end
+	end
+	
+	imagelayer = ImageLayer:new(map,image_element.image,{
+		name       = tmxlayer.name or ('Layer '..#map.layerOrder+1),
+		opacity    = tmxlayer.opacity,
+		visible    = (tmxlayer.visible or 1)== 1,
+		properties = properties,
+		imagesource= image_element.source,
+	})
+	
+	return imagelayer
 end
 ---------------------------------------------------------------------------------------------------
 return Loader
