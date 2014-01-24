@@ -80,12 +80,12 @@ function Map:newObjectLayer(args, position)
    return layer
 end
 ---------------------------------------------------------------------------------------------------
-function Map:newCustomLayer(position)
-	local layer = {class = 'CustomLayer', map = self}
-	if self.layers[layer.name] then 
+function Map:newCustomLayer(name, position, layer)
+	layer = layer or {name = name, class = 'CustomLayer', map = self}
+	if self.layers[name] then 
       error( string.format("Map:newCustomLayer - A layer named \"%s\" already exists.", name) )
    end
-	self.layers[layer.name]= layer
+	self.layers[name]= layer
    table.insert(self.layerOrder, position or #self.layerOrder + 1, layer) 
 	
    return layer
