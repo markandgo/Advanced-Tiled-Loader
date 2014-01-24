@@ -265,8 +265,8 @@ function TileLayer:isoRectangle(vx,vy,vx2,vy2)
 	-- all tiles on the same row have equal sums (x+y)
 	-- all tiles on the same column have equal diff (x-y)
 	local x1 = 0-(mh-1)
-	local x2 = -x1
 	local y1 = 0
+	local x2 = mw-1
 	local y2 = (mw+mh)-2
 	
 	x1,y1,x2,y2 =
