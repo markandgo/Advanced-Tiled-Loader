@@ -12,6 +12,7 @@ local Tile       = require(MODULE_PATH..'Tile')
 local TileSet    = require(MODULE_PATH..'TileSet')
 local TileLayer  = require(MODULE_PATH..'TileLayer')
 local ObjectLayer= require(MODULE_PATH..'ObjectLayer')
+local ImageLayer = require(MODULE_PATH..'ImageLayer')
 
 local floor = math.floor
 
@@ -70,6 +71,19 @@ end
 function Map:newObjectLayer(args, position)
 	position   = position or #self.layerOrder+1
 	local layer= ObjectLayer:new(self,args)
+	local name = layer.name
+   if self.layers[name] then 
+      error( string.format("Map:newObjectLayer - A layer named \"%s\" already exists.", name) )
+   end
+   self.layers[name] = layer
+   table.insert(self.layerOrder, position or #self.layerOrder + 1, layer) 
+	
+   return layer
+end
+---------------------------------------------------------------------------------------------------
+function Map:newImageLayer(image, args, position)
+	position   = position or #self.layerOrder+1
+	local layer= ImageLayer:new(self,image,args)
 	local name = layer.name
    if self.layers[name] then 
       error( string.format("Map:newObjectLayer - A layer named \"%s\" already exists.", name) )
