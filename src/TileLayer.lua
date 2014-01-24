@@ -253,6 +253,7 @@ function TileLayer:draw(x,y)
 end
 ---------------------------------------------------------------------------------------------------
 function TileLayer:isoRectangle(vx,vy,vx2,vy2)
+	-- http://gamedev.stackexchange.com/questions/25896/how-do-i-find-which-isometric-tiles-are-inside-the-cameras-current-view
 
 	local map    = self.map
 	local mw,mh  = map.width,map.height
@@ -275,24 +276,15 @@ function TileLayer:isoRectangle(vx,vy,vx2,vy2)
 		min(x2,ix2-iy2),
 		min(y2,ix2+iy2)
 
-	-- odd grid, x must be an odd integer
-	local offset = y1 % 2
-	x1 = x1 - (x1 % 2) + offset
-		
-	local xi,yi = x1-2,y1
+	local xi,yi = x1-1,y1
 		
 	return function()
 		while true do
-			-- count by 2 on horizontal axis
-			xi = xi+2
+			xi = xi+1
 			if yi > y2 then return end
 			if xi > x2 then 
-				yi = yi + 1; xi = x1 - 2
-				
-				local offset = yi % 2
-				xi = xi - (xi % 2) + offset
+				yi = yi + 1; xi = x1-1
 			else
--- http://gamedev.stackexchange.com/questions/25896/how-do-i-find-which-isometric-tiles-are-inside-the-cameras-current-view
 
 				-- equation obtained from solving
 				-- y = tx + ty
