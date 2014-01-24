@@ -20,8 +20,9 @@ This is a fork of Kadoba's Advanced Tiled Loader.
 New features include:
 * Chunk loading for cooperative multitasking
 * Much faster loading
+* Image layer support
 * Staggered map
 * Extendable class system
 
 Stable release:
-[v0.9.0F](https://github.com/markandgo/Advanced-Tiled-Loader/releases/tag/v0.9.0F)
+[v0.9.1F](https://github.com/markandgo/Advanced-Tiled-Loader/releases/tag/v0.9.1F)

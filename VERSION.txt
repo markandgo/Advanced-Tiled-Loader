@@ -2,6 +2,11 @@ Advanced Tiled Loader
 --------------------------------------------------------------------------------------
 
 CHANGES:
+0.9.1F (2014/01/24)
+- Fixed isometric draw range to clamp right boundary correctly
+- Added support for image layers
+- Added ability to specify draw position when using draw methods
+
 0.9.0F (2014/01/13)
 - (Fork) Public stable release
 - Added support for chunk loading for cooperative multitasking
