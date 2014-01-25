@@ -37,7 +37,8 @@ function TileSet:init(tilewidth,tileheight,image,firstgid,args)
 	self.offsetY    = a.offsetY or 0
 	self.properties = a.properties or {}
 	
-	self.tiles      = {} -- indexed by local id
+	self.tiles       = {} -- indexed by local id
+	self.terraintypes= {} -- index starts at 0
 	
 	-- INIT:
 	local tiles = self.tiles
@@ -68,6 +69,12 @@ end
 function TileSet:rows()
 	return math.floor( (self.image:getHeight() - self.margin*2 + self.spacing) /
 					(self.tileheight + self.spacing) )	
+end
+----------------------------------------------------------------------------------------------------
+function TileSet:newTerrain(name,tile_id,properties)
+	local terrain_id = #self.terraintypes + (self.terraintypes[0] and 1 or 0)
+
+	table.insert(self.terraintypes,terrain_id,{ name = name, tile = tile_id, properties = properties })
 end
 ----------------------------------------------------------------------------------------------------
 -- Return the TileSet class

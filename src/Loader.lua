@@ -236,6 +236,8 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 	local t             = tmxtileset
 	local args          = {name = t.name,spacing = t.spacing,margin = t.margin}
 	local tileproperties= {}
+	local tileterrains  = {}
+	local terraintypes
 	
 	for i,element in ipairs(tmxtileset) do
 		local etype = element[elementkey]
@@ -255,11 +257,18 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 			args.image      = element.image
 			args.imagesource= element.source
 			args.trans      = element.trans
+		elseif etype == 'terraintypes' then
+			terraintypes = element
 		elseif etype == 'tile' then
 			for i,v in ipairs(element) do
 				if v[elementkey] == 'properties' then
 					tileproperties[element.id] = Loader._expandProperties(v)
 				end
+			end
+			if element.terrain then
+				local a,b,c,d = element.terrain:match '(.*),(.*),(.*),(.*)'
+				a,b,c,d       = a and tonumber(a),b and tonumber(b),c and tonumber(c),d and tonumber(d)
+				tileterrains[element.id] = {a,b,c,d}
 			end
 		elseif etype == 'properties' then
 			args.properties = Loader._expandProperties(element)
@@ -273,8 +282,26 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 		t.firstgid,
 		args)
 		
-	-- Import tile properties
+	-- Import terrain types
+	if terraintypes then
+		for i,terrain in ipairs(terraintypes) do
+			local properties
+			for i,v in ipairs(terrain) do
+				if v[elementkey] == 'properties' then
+					properties = Loader._expandProperties(v)
+				end
+			end
+			tileset:newTerrain(terrain.name,terrain.tile,properties)
+		end
+	end
+		
+	-- Import terrain to tile
 	local tiles = tileset.tiles
+	for id,terrain in pairs(tileterrains) do
+		tiles[id].terrain = terrain
+	end	
+	
+	-- Import tile properties
 	for id,properties in pairs(tileproperties) do
 		tiles[id].properties = properties
 	end

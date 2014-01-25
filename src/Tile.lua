@@ -17,13 +17,14 @@ local draw = love.graphics.newMesh and love.graphics.draw or love.graphics.drawq
 local Tile = Class 'Tile' {}
 
 -- Creates a new tile and returns it.
-function Tile:init(tileset,id,quad,properties)
+function Tile:init(tileset,id,quad,properties,terrain)
 	self.tileset = tileset
 	self.id      = id
 	self.quad    = quad
 	
 	-- optional
 	self.properties = properties or {}
+	self.terrain    = terrain -- example: {0,0,0,0}
 end
 
 -- Draws the tile at the given location 
