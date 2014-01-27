@@ -15,6 +15,7 @@ local ObjectLayer= require(MODULE_PATH..'ObjectLayer')
 local ImageLayer = require(MODULE_PATH..'ImageLayer')
 
 local floor = math.floor
+local ERROR_LAYER_NAME = "A layer named \"%s\" already exists."
 
 -- 0.8/0.9+ compatibility
 local getWindow = love.graphics.getMode or love.window.getMode
@@ -46,7 +47,7 @@ function Map:newTileSet(tilewidth,tileheight,image,firstgid,args)
 	local tileset= TileSet:new(tilewidth,tileheight,image,firstgid,args)
 	local name   = tileset.name
 	if self.tilesets[name] then 
-	  error(  string.format("Map:newTileSet - A tile set named \"%s\" already exists.", name) )
+	  error(  string.format("A tileset named \"%s\" already exists.",name) )
 	end
 	self.tilesets[name] = tileset
 	for _,tile in ipairs(tileset.tiles) do
@@ -60,7 +61,7 @@ function Map:newTileLayer(args,position)
 	local layer= TileLayer:new(self,args)
 	local name = layer.name
    if self.layers[name] then 
-      error( string.format("Map:newTileLayer - A layer named \"%s\" already exists.", name) )
+      error( string.format(ERROR_LAYER_NAME,name) )
    end
    self.layers[name] = layer
    table.insert(self.layerOrder, position or #self.layerOrder + 1, layer) 
@@ -73,7 +74,7 @@ function Map:newObjectLayer(args, position)
 	local layer= ObjectLayer:new(self,args)
 	local name = layer.name
    if self.layers[name] then 
-      error( string.format("Map:newObjectLayer - A layer named \"%s\" already exists.", name) )
+      error( string.format(ERROR_LAYER_NAME,name) )
    end
    self.layers[name] = layer
    table.insert(self.layerOrder, position or #self.layerOrder + 1, layer) 
@@ -86,7 +87,7 @@ function Map:newImageLayer(image, args, position)
 	local layer= ImageLayer:new(self,image,args)
 	local name = layer.name
    if self.layers[name] then 
-      error( string.format("Map:newObjectLayer - A layer named \"%s\" already exists.", name) )
+      error( string.format(ERROR_LAYER_NAME,name) )
    end
    self.layers[name] = layer
    table.insert(self.layerOrder, position or #self.layerOrder + 1, layer) 
@@ -97,7 +98,7 @@ end
 function Map:newCustomLayer(name, position, layer)
 	layer = layer or {name = name, class = 'CustomLayer', map = self}
 	if self.layers[name] then 
-      error( string.format("Map:newCustomLayer - A layer named \"%s\" already exists.", name) )
+      error( string.format(ERROR_LAYER_NAME,name) )
    end
 	self.layers[name]= layer
    table.insert(self.layerOrder, position or #self.layerOrder + 1, layer) 
