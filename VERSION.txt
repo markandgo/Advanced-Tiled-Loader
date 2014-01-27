@@ -2,6 +2,11 @@ Advanced Tiled Loader
 --------------------------------------------------------------------------------------
 
 CHANGES:
+0.9.2F (2014/01/27)
+- Added support for terrain
+- Added Map:newImageLayer
+- Fixed Map:newCustomLayer
+
 0.9.1F (2014/01/24)
 - Fixed isometric draw range to clamp right boundary correctly
 - Added support for image layers

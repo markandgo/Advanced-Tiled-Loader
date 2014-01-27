@@ -21,8 +21,9 @@ New features include:
 * Chunk loading for cooperative multitasking
 * Much faster loading
 * Image layer support
+* Support for terrain data
 * Staggered map
 * Extendable class system
 
 Stable release:
-[v0.9.1F](https://github.com/markandgo/Advanced-Tiled-Loader/releases/tag/v0.9.1F)
+[v0.9.2F](https://github.com/markandgo/Advanced-Tiled-Loader/releases/tag/v0.9.2F)
