@@ -50,6 +50,11 @@
   <object x="476" y="259">
    <polyline points="0,0 -315,219"/>
   </object>
-  <object gid="41" x="221" y="219"/>
+ </objectgroup>
+ <objectgroup color="#ff0000" name="Object Layer 2" width="20" height="20">
+  <object gid="72" x="640" y="640"/>
+  <object gid="72" x="608" y="608"/>
+  <object gid="72" x="640" y="608"/>
+  <object gid="72" x="608" y="640"/>
  </objectgroup>
 </map>

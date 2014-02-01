@@ -71,13 +71,23 @@ function Object:updateAABB()
 		end
 	else
 		if isIso then 
+--[[
+      0,0
+       /\
+      /  \
+x3,y3/    \x1,y1
+     \    /
+      \  /
+       \/x2,y2
+]]
+		
 			local w,h  = self.width/th, self.height/th
 			local x1,y1= map:fromIso(w,0)
 			local x2,y2= map:fromIso(w,h)
 			local x3,y3= map:fromIso(0,h)
 			
-			left,right = math.min(left or 0,x1,x2,x3) + x, math.max(right or 0,x1,x2,x3) + x
-			top,bot    = math.min(top or 0,y1,y2,y3) + y, math.max(bot or 0,y1,y2,y3) + y
+			left,right = x3 + x, x1 + x
+			top,bot    = y, y2 + y
 		else
 			left,top,right,bot = x,y,x+self.width,y+self.height
 		end

@@ -50,7 +50,14 @@ function ObjectLayer:newObject(x,y,gid,args, position)
    self._redraw = true
    return object
 end
+---------------------------------------------------------------------------------------------------
+local function sort_cb(obj1,obj2)
+	return obj1._bbox[4] < obj2._bbox[4]
+end
 
+function ObjectLayer:depthSort()
+	table.sort(self._drawlist,sort_cb)
+end
 ---------------------------------------------------------------------------------------------------
 -- Draws the object layer. The way the objects are drawn depends on the map orientation and
 -- if the object has an associated tile. It tries to draw the objects as closely to the way
@@ -84,6 +91,7 @@ function ObjectLayer:draw(x,y)
 			end
 		end
 		self._drawlist = new_drawlist
+		self:depthSort()
 	end
 	
 	love.graphics.push()
