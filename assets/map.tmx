@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" width="10" height="10" tilewidth="16" tileheight="16" backgroundcolor="#000000">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="10" height="10" tilewidth="16" tileheight="16" backgroundcolor="#000000">
  <properties>
   <property name="map" value="1"/>
  </properties>
@@ -15,6 +15,14 @@
   </tile>
  </tileset>
  <tileset firstgid="5" source="tileset.tsx"/>
+ <tileset firstgid="9" name="tileset3" tilewidth="640" tileheight="1024">
+  <tile id="0">
+   <image width="32" height="32" source="tileset.png"/>
+  </tile>
+  <tile id="1">
+   <image width="640" height="1024" source="isotile.png"/>
+  </tile>
+ </tileset>
  <layer name="Tile Layer 1" width="10" height="10" opacity="0.46">
   <properties>
    <property name="layer" value="1"/>
@@ -43,10 +51,10 @@
 0,4,3,4,0,0,0,0,0,0,
 0,4,4,4,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0
+0,536870921,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup color="#ffaa00" name="Object Layer 1" width="10" height="10">
+ <objectgroup color="#ffaa00" name="Object Layer 1">
   <object name="obj1" x="144" y="96" width="16" height="16">
    <properties>
     <property name="name" value="obj1"/>

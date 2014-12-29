@@ -5,7 +5,7 @@ function love.load()
 		-- Test loading and saving
 		if filename then
 			-- Use small chunk size to show off loader
-			loader  = atl.Loader.load(filename,10)
+			loader  = atl.load(filename,10)
 		end
 		local newmap,err = loader()
 		if err then error(err) end
@@ -22,11 +22,10 @@ function love.load()
 		speed= defaultspeed
 		
 		-- Make the background scroll slower than the foreground
-		-- Default value is 1 (default scroll speed)
-		-- 0.5 = scroll half as fast
-		local layer = map.layerOrder[1]
-		layer.parallaxX = .7
-		layer.parallaxY = .7
+		-- 1 is normal speed
+		bg_parallaxX = 0.7
+		bg_parallaxY = 0.7
+		bg = map.layerOrder[1]
 		
 		-- Test properties
 		assert(map.properties.map == 1)
@@ -46,11 +45,12 @@ function love.load()
 	
 	-- Cycle through these maps
 	list = {
-		'map.tmx',
-		'stagmap.tmx',
-		'isomap.tmx',
+		'assets/map.tmx',
+		'assets/stagmap.tmx',
+		'assets/isomap.tmx',
 	}
-	list_i      = 1 
+	list_i    = 1 
+	show_help = true
 	
 	loadmap( list[list_i] )
 	repeat
@@ -91,6 +91,12 @@ function love.keypressed(k)
 	if k == 'r' then
 		map.layerOrder[1]:rotateTile(0,0)
 	end
+	if k == 'f1' then
+		show_help = not show_help
+	end
+	if k == 'f2' then
+		map.batch_draw = not map.batch_draw
+	end
 end
 
 function love.mousepressed(x,y,b)
@@ -124,13 +130,9 @@ function love.update(dt)
 		map:autoDrawRange(x,y, scale, padding)
 	end
 	
-	-- The parallax origin offsets
-	-- Use the opposite sign of love.graphics.translate
-	-- Example of slow background scrolling:
-	-- background: parallaxX = 0.5 and ox = 10 --> move 0.5*10 = 5
-	-- foreground: parallaxX = 1.0 and ox = 10 --> move 1.0*10 = 10
-	map.ox = x
-	map.oy = y
+	-- Scroll the background more slowly
+	bg.ox = (1-bg_parallaxX)*x
+	bg.oy = (1-bg_parallaxY)*y
 end
 
 function love.draw()
@@ -147,18 +149,23 @@ function love.draw()
 	
 	fps = love.timer.getFPS()
 	
-	local msg = {
-		'fps: '..fps,
-		'map name: '..list[list_i],
-		'scale: '..scale,
-		'Draw limit: '..tostring(not draw_all),
-		'Press tab to toggle draw control',
-		'Press space to switch map',
-		'Arrow keys to move, mouse wheel to zoom',
-		'Press x/y/r to flipx/flipy/rotate',
-		'Loading ...'..tostring(not finished_loading),
-	}
-	local complete_msg = table.concat(msg,'\n')
-	
-	love.graphics.print( complete_msg ,0,0)
+	if show_help then
+		local msg = {
+			'fps: '..fps,
+			'map name: '..list[list_i],
+			'scale: '..scale,
+			'Draw limit: '..tostring(not draw_all),
+			'Press f1 to toggle help view',
+			'Press f2 to toggle batch draw',
+			'Press tab to toggle draw control',
+			'Press space to switch map',
+			'Arrow keys to move, mouse wheel to zoom',
+			'Press x/y/r to flipx/flipy/rotate',
+			'Using spritebatch: '..tostring(map.batch_draw),
+			'Loading ...'..tostring(not finished_loading),
+		}
+		local complete_msg = table.concat(msg,'\n')
+		
+		love.graphics.print( complete_msg ,0,0)
+	end
 end
