@@ -15,7 +15,7 @@ Supported features include:
 * Isometric maps
 * Flipped and rotated tiles
 
-This is a fork of Kadoba's Advanced Tiled Loader.
+This was a fork of Kadoba's Advanced Tiled Loader. The majority of the code has been rewritten from the ground up.
 
 New features include:
 * Chunk loading for cooperative multitasking
