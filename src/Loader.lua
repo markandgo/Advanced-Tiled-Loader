@@ -130,15 +130,6 @@ function Loader.load(filename,chunk_size)
 	return Loader._load(filename)
 end
 
--- should return true if successful else error as second message
-
-function Loader.save(map,filename)
-	return xpcall(function()
-		local tmxmap = Loader._compactMap(map)
-		Loader._saveAsXML(tmxmap,filename)
-	end,debug.traceback)
-end
-
 function Loader._chunkCheck(object)
 	if coroutine.running() then
 		object.chunk_counter = object.chunk_counter + 1
