@@ -9,14 +9,15 @@ local MODULE_PATH  = (...) .. '.'
 
 -- Return the classes in a table
 return {
-	Map        = require(MODULE_PATH  .. "Map"),
-	TileLayer  = require(MODULE_PATH  .. "TileLayer"),
-	Tile       = require(MODULE_PATH  .. "Tile"),
-	TileSet    = require(MODULE_PATH  .. "TileSet"),
-	Object     = require(MODULE_PATH  .. "Object"),
-	ObjectLayer= require(MODULE_PATH  .. "ObjectLayer"),
-	Loader     = require(MODULE_PATH  .. "Loader"),
-	Grid       = require(MODULE_PATH .. "Grid"),
-	Base64     = require(MODULE_PATH .. "Base64"),
-	Class      = require(MODULE_PATH .. "Class"),
+	_VERSION    = '0.9.2F',
+	Map         = require(MODULE_PATH  .. "Map"),
+	TileLayer   = require(MODULE_PATH  .. "TileLayer"),
+	Tile        = require(MODULE_PATH  .. "Tile"),
+	TileSet     = require(MODULE_PATH  .. "TileSet"),
+	Object      = require(MODULE_PATH  .. "Object"),
+	ObjectLayer = require(MODULE_PATH  .. "ObjectLayer"),
+	Loader      = require(MODULE_PATH  .. "Loader"),
+	Grid        = require(MODULE_PATH .. "Grid"),
+	Base64      = require(MODULE_PATH .. "Base64"),
+	Class       = require(MODULE_PATH .. "Class"),
 }
