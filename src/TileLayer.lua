@@ -11,7 +11,7 @@ local Grid       = require(MODULE_PATH..'Grid')
 
 -- 0.8 compatibility
 local addQuad = 'add'
-if not love.graphics.newMesh then
+if love.graphics.drawq then
 	addQuad = 'addq'
 end
 
