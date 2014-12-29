@@ -9,7 +9,7 @@ Copyright (c) 2013-2014 Minh Ngo
 local MODULE_PATH  = (...):match('^.+[%.\\/]')
 local Class        = require(MODULE_PATH .. 'Class')
 
-local draw = love.graphics.newMesh and love.graphics.draw or love.graphics.drawq
+local draw = love.graphics.drawq or love.graphics.draw
 ---------------------------------------------------------------------------------------------------
 -- -= Tile =-
 ---------------------------------------------------------------------------------------------------
