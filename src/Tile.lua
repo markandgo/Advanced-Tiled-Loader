@@ -23,7 +23,7 @@ function Tile:init(tileset,id,quad,properties,terrain)
 	
 	-- optional
 	self.properties = properties or {}
-	self.terrain    = terrain -- example: {0,0,0,0}
+	self.terrain    = terrain
 end
 
 -- Draws the tile at the given location 

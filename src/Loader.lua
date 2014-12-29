@@ -288,6 +288,10 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 	-- Import terrain to tile
 	local tiles = tileset.tiles
 	for id,terrain in pairs(tileterrains) do
+		for i = 1,4 do
+			terrain[i] = tileset.terraintypes[terrain[i]]
+		end
+	
 		tiles[id].terrain = terrain
 	end	
 	
