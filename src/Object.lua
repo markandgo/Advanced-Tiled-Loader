@@ -7,12 +7,12 @@ Copyright (c) 2013-2014 Minh Ngo
 
 local MODULE_PATH= (...):match('^.+[%.\\/]')
 local Class      = require(MODULE_PATH .. 'Class')
----------------------------------------------------------------------------------------------------
+
 -- -= Object =-
----------------------------------------------------------------------------------------------------
+
 -- Setup
 local Object = Class "Object" {}
----------------------------------------------------------------------------------------------------
+
 
 -- Returns a new Object
 function Object:init(layer,x,y,gid,args)
@@ -45,7 +45,7 @@ function Object:init(layer,x,y,gid,args)
 	Object.updateAABB(self)
 end
 
----------------------------------------------------------------------------------------------------
+
 function Object:updateAABB()
 	local map   = self.layer.map
 	local th    = map.tileheight
@@ -95,7 +95,7 @@ x3,y3/    \x1,y1
 	local bb = self._bbox
 	bb[1],bb[2],bb[3],bb[4] = left,top,right,bot
 end
----------------------------------------------------------------------------------------------------
+
 -- Draw the object.
 local h_to_diag = 1 / 2^.5
 local octant    = math.pi / 4
@@ -172,6 +172,6 @@ function Object:draw()
 	love.graphics.pop()
 end
 
----------------------------------------------------------------------------------------------------
+
 -- Returns the Object class
 return Object

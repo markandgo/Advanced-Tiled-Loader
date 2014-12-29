@@ -5,9 +5,9 @@ The full license can be found in "license.txt".
 Copyright (c) 2013-2014 Minh Ngo
 ]]
 
----------------------------------------------------------------------------------------------------
+
 -- -= ObjectLayer =-
----------------------------------------------------------------------------------------------------
+
 -- Setup
 local MODULE_PATH  = (...):match('^.+[%.\\/]')
 local Class        = require(MODULE_PATH .. 'Class')
@@ -16,7 +16,7 @@ local Object       = require( MODULE_PATH .. "Object")
 local grey         = {128,128,128,255}
 
 local ObjectLayer  = Class "ObjectLayer" {}
----------------------------------------------------------------------------------------------------
+
 -- Creates and returns a new ObjectLayer
 function ObjectLayer:init(map,args)
 	local a = args or {}
@@ -41,7 +41,7 @@ function ObjectLayer:init(map,args)
 	self._redraw    = true
 end
 
----------------------------------------------------------------------------------------------------
+
 -- Creates a new object, automatically inserts it into the layer, and then returns it
 function ObjectLayer:newObject(x,y,gid,args, position)
 	local object = Object:new(self,x,y,gid,args)
@@ -49,7 +49,7 @@ function ObjectLayer:newObject(x,y,gid,args, position)
    self._redraw = true
    return object
 end
----------------------------------------------------------------------------------------------------
+
 local function sort_cb(obj1,obj2)
 	return obj1._bbox[4] < obj2._bbox[4]
 end
@@ -57,7 +57,7 @@ end
 function ObjectLayer:depthSort()
 	table.sort(self._drawlist,sort_cb)
 end
----------------------------------------------------------------------------------------------------
+
 -- Draws the object layer. The way the objects are drawn depends on the map orientation and
 -- if the object has an associated tile. It tries to draw the objects as closely to the way
 -- Tiled does it as possible.
@@ -118,6 +118,6 @@ function ObjectLayer:draw(x,y)
 	love.graphics.setColor(r,g,b,a)
 	love.graphics.pop()
 end
----------------------------------------------------------------------------------------------------
+
 -- Return the ObjectLayer class
 return ObjectLayer

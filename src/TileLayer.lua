@@ -19,7 +19,7 @@ local floor    = math.floor
 local min,max  = math.min,math.max
 
 local TileLayer = Grid:extend "TileLayer" {}
----------------------------------------------------------------------------------------------------
+
 function TileLayer:init(map,args)
 	local a = args or {}
 	
@@ -40,14 +40,14 @@ function TileLayer:init(map,args)
 	self._batches  = {} -- indexed by tileset
 	self._redraw   = true
 end
----------------------------------------------------------------------------------------------------
+
 function TileLayer:clear()
 	self.cells    = {}
 	self._gridflip= {}
 	self._batches = {}
 	self._batchid = {}
 end
----------------------------------------------------------------------------------------------------
+
 -- passing nil clears a tile
 function TileLayer:setTile(tx,ty,tile,orientation)
 	self:set(tx,ty,tile)
@@ -58,7 +58,7 @@ function TileLayer:setTile(tx,ty,tile,orientation)
 	end
 	self._redraw = true
 end
----------------------------------------------------------------------------------------------------
+
 -- nil for unchange, true to flip
 function TileLayer:flipTile(tx,ty, flipX,flipY)
 	local flip = self._gridflip:get(tx,ty) or 0
@@ -76,7 +76,7 @@ function TileLayer:flipTile(tx,ty, flipX,flipY)
 	self._redraw = true
 	return flip
 end
----------------------------------------------------------------------------------------------------
+
 -- rotate 90 degrees
 -- Can specify amount of rotation (1x,2x,3x,...)
 function TileLayer:rotateTile(tx,ty,amount)
@@ -99,18 +99,18 @@ function TileLayer:rotateTile(tx,ty,amount)
 	self._redraw = true
 	return flip
 end
----------------------------------------------------------------------------------------------------
+
 -- Reset tile orientation
 function TileLayer:resetOrientation(tx,ty)
 	self._gridflip:set(tx,ty,0)
 	self._redraw = true
 end
----------------------------------------------------------------------------------------------------
+
 -- Get tile orientation
 function TileLayer:getOrientation(tx,ty)
 	return self._gridflip:get(tx,ty)
 end
----------------------------------------------------------------------------------------------------
+
 function TileLayer:_getTileIterator()
 	-- origin offset
 	local ox = (map.ox * self.parallaxX) - map.ox - self.offsetX
@@ -158,7 +158,7 @@ function TileLayer:_getTileIterator()
 	
 	return tile_iterator
 end
----------------------------------------------------------------------------------------------------
+
 function TileLayer:_getDrawParameters(tx,ty,tile)
 	local qw,qh  = tile.tileset.tilewidth, tile.tileset.tileheight
 		
@@ -209,7 +209,7 @@ function TileLayer:_getDrawParameters(tx,ty,tile)
 	
 	return x,y, dx,dy, angle, sx,sy, ox,oy
 end
----------------------------------------------------------------------------------------------------
+
 function TileLayer:draw(x,y)
 	if not self.visible then return end
 	
@@ -278,7 +278,7 @@ function TileLayer:draw(x,y)
 	end
 	love.graphics.setColor(r,g,b,a)
 end
----------------------------------------------------------------------------------------------------
+
 function TileLayer:isoRectangle(vx,vy,vx2,vy2)
 	-- http://gamedev.stackexchange.com/questions/25896/how-do-i-find-which-isometric-tiles-are-inside-the-cameras-current-view
 
@@ -328,5 +328,5 @@ function TileLayer:isoRectangle(vx,vy,vx2,vy2)
 		end
 	end
 end
----------------------------------------------------------------------------------------------------
+
 return TileLayer

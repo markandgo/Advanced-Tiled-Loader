@@ -14,16 +14,16 @@ Grid.__call  = function(...) return Grid.get(...) end
 function Grid:init()
 	self.cells = {}
 end
----------------------------------------------------------------------------------------------------
+
 function Grid:get(x,y)
 	return self.cells[x] and self.cells[x][y]
 end
----------------------------------------------------------------------------------------------------
+
 function Grid:set(x,y,v)
 	self.cells[x]    = self.cells[x] or {}
 	self.cells[x][y] = v
 end
----------------------------------------------------------------------------------------------------
+
 function Grid:rectangle(x,y,x2,y2,skipNil)
 	local xi,yi = x-1,y
 	return function()
@@ -41,7 +41,7 @@ function Grid:rectangle(x,y,x2,y2,skipNil)
 		end
 	end
 end
----------------------------------------------------------------------------------------------------
+
 function Grid:iterate()
 	local cells,x,t,y,v = self.cells
 	return function()
@@ -55,5 +55,5 @@ function Grid:iterate()
 		return x,y,v
 	end
 end
----------------------------------------------------------------------------------------------------
+
 return Grid

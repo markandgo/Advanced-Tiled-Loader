@@ -8,7 +8,7 @@ Copyright (c) 2013-2014 Minh Ngo
 local MODULE_PATH= (...):match('^.+[%.\\/]')
 local Class      = require(MODULE_PATH .. 'Class')
 local ImageLayer = Class "ImageLayer" {}
----------------------------------------------------------------------------------------------------
+
 function ImageLayer:init(map,image,args)
 	local a = args or {}
 	
@@ -25,7 +25,7 @@ function ImageLayer:init(map,image,args)
 	self.offsetX    = a.offsetX or 0   -- x offset added to map position
 	self.offsetY    = a.offsetY or 0   -- y offset added to map position
 end
----------------------------------------------------------------------------------------------------
+
 function ImageLayer:draw(x,y)
 	if not self.visible then return end
 	
@@ -40,5 +40,5 @@ function ImageLayer:draw(x,y)
 	love.graphics.draw(self.image, x,y, nil,nil,nil, ox, oy)
 	love.graphics.setColor(r,g,b,a)
 end
----------------------------------------------------------------------------------------------------
+
 return ImageLayer

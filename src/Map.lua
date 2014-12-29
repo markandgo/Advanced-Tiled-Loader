@@ -21,7 +21,7 @@ local getWindow = love.graphics.getMode or love.window.getMode
 
 local Map   = Class "Map" {}
 Map.__call  = function(self, layername) return self.layers[layername] end
----------------------------------------------------------------------------------------------------
+
 function Map:init(width,height,tilewidth,tileheight,args)
 	local a = args or {}
 	
@@ -42,7 +42,7 @@ function Map:init(width,height,tilewidth,tileheight,args)
 	self._drawrange = nil -- {x,y,x2,y2} no drawrange means draw everything
 	self.batch_draw = true
 end
----------------------------------------------------------------------------------------------------
+
 function Map:newTileSet(tilewidth,tileheight,image,firstgid,args)
 	local tileset= TileSet:new(tilewidth,tileheight,image,firstgid,args)
 	local name   = tileset.name
@@ -55,7 +55,7 @@ function Map:newTileSet(tilewidth,tileheight,image,firstgid,args)
 	end
 	return tileset
 end
----------------------------------------------------------------------------------------------------
+
 function Map:newTileLayer(args,position)
 	position   = position or #self.layerOrder+1
 	local layer= TileLayer:new(self,args)
@@ -68,7 +68,7 @@ function Map:newTileLayer(args,position)
 	
    return layer
 end
----------------------------------------------------------------------------------------------------
+
 function Map:newObjectLayer(args, position)
 	position   = position or #self.layerOrder+1
 	local layer= ObjectLayer:new(self,args)
@@ -81,7 +81,7 @@ function Map:newObjectLayer(args, position)
 	
    return layer
 end
----------------------------------------------------------------------------------------------------
+
 function Map:newImageLayer(image, args, position)
 	position   = position or #self.layerOrder+1
 	local layer= ImageLayer:new(self,image,args)
@@ -94,7 +94,7 @@ function Map:newImageLayer(image, args, position)
 	
    return layer
 end
----------------------------------------------------------------------------------------------------
+
 function Map:newCustomLayer(name, position, layer)
 	layer = layer or {name = name, class = 'CustomLayer', map = self}
 	if self.layers[name] then 
@@ -105,7 +105,7 @@ function Map:newCustomLayer(name, position, layer)
 	
    return layer
 end
----------------------------------------------------------------------------------------------------
+
 -- The unit length of a tile on both axes is 1. 
 -- Point (0,0) is the apex of tile (0,0).
 function Map:fromIso(ix,iy)
@@ -114,7 +114,7 @@ function Map:fromIso(ix,iy)
 	-- tiles on the same column have the same difference
 	return hw*(ix - iy),hh*(ix + iy)
 end
----------------------------------------------------------------------------------------------------
+
 -- Point (0,0) is always at the apex of tile (0,0) pre-parallax.
 function Map:toIso(x,y)
 	local hw,hh   = self.tilewidth/2,self.tileheight/2
@@ -124,7 +124,7 @@ function Map:toIso(x,y)
 	
 	return det * (d * x - b * y), det * (-c * x + a * y)
 end
----------------------------------------------------------------------------------------------------
+
 function Map:callback(cb_name, ...)
 	local order = self.layerOrder
 	for i=1,#order do
@@ -132,11 +132,11 @@ function Map:callback(cb_name, ...)
       if layer[cb_name] then layer[cb_name](layer, ...) end
 	end
 end
----------------------------------------------------------------------------------------------------
+
 function Map:draw(x,y)
 	self:callback('draw',x,y)
 end
----------------------------------------------------------------------------------------------------
+
 function Map:setDrawRange(x,y,x2,y2)
 	-- draw everything
 	if not (x and y and x2 and y2) then
@@ -163,7 +163,7 @@ function Map:setDrawRange(x,y,x2,y2)
 		layer._redraw = true
 	end
 end
----------------------------------------------------------------------------------------------------
+
 -- cx,cy is the center of the untransformed map coordinates
 -- scale: scale of map
 function Map:autoDrawRange(cx,cy, scale, padding)
@@ -179,5 +179,5 @@ function Map:autoDrawRange(cx,cy, scale, padding)
 		cx + dw ,
 		cy + dh)
 end
----------------------------------------------------------------------------------------------------
+
 return Map

@@ -5,9 +5,9 @@ The full license can be found in "license.txt".
 Copyright (c) 2013-2014 Minh Ngo
 ]]
 
----------------------------------------------------------------------------------------------------
+
 -- -= Loader =-
----------------------------------------------------------------------------------------------------
+
 -- 0.8 compatibility
 local createDirectory = love.filesystem.mkdir or love.filesystem.createDirectory
 
@@ -35,7 +35,7 @@ local Loader = {
 	filterMag = 'nearest',
 }
 
----------------------------------------------------------------------------------------------------
+
 -- UTILITY
 
 local function getPathComponents(path)
@@ -65,7 +65,7 @@ local function byteToNumber(str)
 	return num
 end
 
----------------------------------------------------------------------------------------------------
+
 -- XML HANDLER
 
 local handler   = {}
@@ -102,7 +102,7 @@ end
 handler.text = function(self,text)
 	table.insert(self.stack[self.stack.len],1,text)
 end
----------------------------------------------------------------------------------------------------
+
 -- should return map else false and error string
 
 function Loader._load(filename,chunk_size)
@@ -129,7 +129,7 @@ function Loader.load(filename,chunk_size)
 	end
 	return Loader._load(filename)
 end
----------------------------------------------------------------------------------------------------
+
 -- should return true if successful else error as second message
 
 function Loader.save(map,filename)
@@ -138,7 +138,7 @@ function Loader.save(map,filename)
 		Loader._saveAsXML(tmxmap,filename)
 	end,debug.traceback)
 end
----------------------------------------------------------------------------------------------------
+
 function Loader._chunkCheck(object)
 	if coroutine.running() then
 		object.chunk_counter = object.chunk_counter + 1
@@ -147,7 +147,7 @@ function Loader._chunkCheck(object)
 		end
 	end
 end
----------------------------------------------------------------------------------------------------
+
 function Loader._parseTMX(filename,chunk_size)
 	local h        = handler.new()
 	h.chunk_size   = chunk_size
@@ -163,7 +163,7 @@ function Loader._parseTMX(filename,chunk_size)
 	
 	return tmxmap
 end
----------------------------------------------------------------------------------------------------
+
 function Loader._expandMap(tmxmap)
 	local a = tmxmap
 	local map = Map:new(
@@ -213,7 +213,7 @@ function Loader._expandMap(tmxmap)
 	
 	return map
 end
----------------------------------------------------------------------------------------------------
+
 function Loader._expandProperties(tmxproperties)
 	local properties = {}
 	for i,property in ipairs(tmxproperties) do
@@ -221,7 +221,7 @@ function Loader._expandProperties(tmxproperties)
 	end
 	return properties
 end
----------------------------------------------------------------------------------------------------
+
 function Loader._expandTileSet(tmxtileset,tmxmap)
 	if tmxtileset.source then
 		local path         = stripExcessSlash( stripUpDirectory(tmxmap.directory..tmxtileset.source) )
@@ -307,7 +307,7 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 		
 	return tileset
 end
----------------------------------------------------------------------------------------------------
+
 function Loader._expandImage(tmximage,tmxmap)
 	local source      = stripExcessSlash(  stripUpDirectory(tmxmap.directory..tmximage.source)  )
 	local trans       = tmximage.trans
@@ -340,7 +340,7 @@ function Loader._expandImage(tmximage,tmxmap)
 	end
 	tmximage.image = image
 end
----------------------------------------------------------------------------------------------------
+
 function Loader._streamLayerData(tmxlayer,tmxmap)
 	local data
 	for i = 1,#tmxlayer do
@@ -394,7 +394,7 @@ function Loader._streamLayerData(tmxlayer,tmxmap)
 		end
 	end)
 end
----------------------------------------------------------------------------------------------------
+
 function Loader._expandTileLayer(tmxlayer,tmxmap,map)
 	local layer = TileLayer:new(map,{
 		name      = tmxlayer.name or ('Layer '..#map.layerOrder+1),
@@ -421,7 +421,7 @@ function Loader._expandTileLayer(tmxlayer,tmxmap,map)
 	
 	return layer
 end
----------------------------------------------------------------------------------------------------
+
 function Loader._expandObjectGroup(tmxlayer,tmxmap,map)
 	local layer = ObjectLayer:new(map,{
 		name       = tmxlayer.name or ('Layer '..#map.layerOrder+1),
@@ -487,7 +487,7 @@ function Loader._expandObjectGroup(tmxlayer,tmxmap,map)
 	
 	return layer
 end
----------------------------------------------------------------------------------------------------
+
 function Loader._expandImageLayer(tmxlayer,tmxmap,map)
 	local properties,imagelayer,image_element
 
@@ -511,5 +511,5 @@ function Loader._expandImageLayer(tmxlayer,tmxmap,map)
 	
 	return imagelayer
 end
----------------------------------------------------------------------------------------------------
+
 return Loader

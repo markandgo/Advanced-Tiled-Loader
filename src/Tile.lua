@@ -9,9 +9,9 @@ local MODULE_PATH  = (...):match('^.+[%.\\/]')
 local Class        = require(MODULE_PATH .. 'Class')
 
 local draw = love.graphics.drawq or love.graphics.draw
----------------------------------------------------------------------------------------------------
+
 -- -= Tile =-
----------------------------------------------------------------------------------------------------
+
 -- Setup
 local Tile = Class 'Tile' {}
 
