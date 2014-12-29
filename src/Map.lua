@@ -40,6 +40,7 @@ function Map:init(width,height,tilewidth,tileheight,args)
 	self.tiles      = a.tiles or {} -- indexed by gid
 	self.properties = a.properties or {}
 	self._drawrange = nil -- {x,y,x2,y2} no drawrange means draw everything
+	self.batch_draw = true
 end
 ---------------------------------------------------------------------------------------------------
 function Map:newTileSet(tilewidth,tileheight,image,firstgid,args)

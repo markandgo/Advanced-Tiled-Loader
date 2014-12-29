@@ -111,142 +111,170 @@ function TileLayer:getOrientation(tx,ty)
 	return self._gridflip:get(tx,ty)
 end
 ---------------------------------------------------------------------------------------------------
+function TileLayer:_getTileIterator()
+	-- origin offset
+	local ox = (map.ox * self.parallaxX) - map.ox - self.offsetX
+	local oy = (map.oy * self.parallaxY) - map.oy - self.offsetY
+	local tw,th = map.tilewidth,map.tileheight
+	local tile_iterator
+	
+	if map._drawrange then
+		local vx,vy,vx2,vy2 = unpack(map._drawrange)
+		-- apply drawing offsets
+		vx,vy  = vx + ox, vy + oy
+		vx2,vy2= vx2 + ox, vy2 + oy
+		
+		if map.orientation == 'orthogonal' then
+			local gx,gy,gx2,gy2 = floor( vx / tw ), floor( vy / th ),
+				floor( vx2 / tw ), floor( vy2 / th )
+			
+			gx,gy,gx2,gy2 = 
+				max(0,gx),
+				max(0,gy),
+				min(gx2,map.width),
+				min(gy2,map.height)
+			
+			tile_iterator = self:rectangle(gx,gy,gx2,gy2, true)
+		
+		elseif map.orientation == 'isometric' then
+			
+			tile_iterator = self:isoRectangle(vx,vy, vx2,vy2)
+			
+		elseif map.orientation == 'staggered' then
+			local gx,gy,gx2,gy2 = floor( vx / tw ), floor( vy / th ) * 2,
+				floor( vx2 / tw ), floor( vy2 / th ) * 2
+			
+			gx,gy,gx2,gy2 = 
+				max(0,gx),
+				max(0,gy),
+				min(gx2,map.width),
+				min(gy2,map.height)
+			
+			tile_iterator = self:rectangle(gx,gy, gx2,gy2, true)
+		end
+	else
+		tile_iterator = self:rectangle(0,0,map.width-1,map.height-1,true)
+	end
+	
+	return tile_iterator
+end
+---------------------------------------------------------------------------------------------------
+function TileLayer:_getDrawParameters(tx,ty,tile)
+	local qw,qh  = tile.tileset.tilewidth, tile.tileset.tileheight
+		
+	local flipbits= self._gridflip:get(tx,ty) or 0
+	local flipX   = floor(flipbits / 4) == 1       
+	local flipY   = floor( (flipbits % 4) / 2) == 1
+	local flipDiag= flipbits % 2 == 1
+	
+	local x,y
+	
+	-- offsets to rotate about center
+	local ox,oy = qw/2,qh/2
+	
+	-- offsets to align to top left again
+	local dx,dy = ox,oy
+	
+	local sx,sy = flipX and -1 or 1, flipY and -1 or 1
+	local angle = 0
+	if flipDiag then
+		angle = math.pi/2
+		sx,sy = sy, sx*-1
+		
+		-- rotated tile has switched dimensions
+		dx,dy = dy,dx
+		
+		-- extra offset to align to bottom like Tiled
+		dy    = dy - (qw - map.tileheight)
+	else
+		dy    = dy - (qh - map.tileheight)
+	end
+	
+	if map.orientation == 'orthogonal' then
+
+		x,y   = tx * map.tilewidth,
+				  ty * map.tileheight
+		
+	elseif map.orientation == 'isometric' then
+		x,y = map:fromIso(tx,ty)
+		
+		-- apex of tile (0,0) is point (0,0)
+		x   = x - (map.tilewidth/2)
+	elseif map.orientation == 'staggered' then
+		local offset  = ty % 2
+		local xoffset = (offset*0.5*map.tilewidth)
+		x             = tx * map.tilewidth + xoffset
+		y             = ty * map.tileheight*0.5
+	end
+	
+	return x,y, dx,dy, angle, sx,sy, ox,oy
+end
+---------------------------------------------------------------------------------------------------
 function TileLayer:draw(x,y)
 	if not self.visible then return end
 	
 	local map = self.map
 	local unbind
 	
-	-- origin offset
-	local ox = (map.ox * self.parallaxX) - map.ox - self.offsetX
-	local oy = (map.oy * self.parallaxY) - map.oy - self.offsetY
+	local mox = (map.ox * self.parallaxX) - map.ox - self.offsetX
+	local moy = (map.oy * self.parallaxY) - map.oy - self.offsetY
 	
 	local r,g,b,a = love.graphics.getColor()
 	love.graphics.setColor(r,g,b,self.opacity*a)
 	
-	if self._redraw then
-	
-		local tw,th = map.tilewidth,map.tileheight
-		self._redraw= false
-		unbind      = true
+	if map.batch_draw then
+		if self._redraw then
 		
-		local tile_iterator
-		
-		if map._drawrange then
-			local vx,vy,vx2,vy2 = unpack(map._drawrange)
-			-- apply drawing offsets
-			vx,vy  = vx + ox, vy + oy
-			vx2,vy2= vx2 + ox, vy2 + oy
+			self._redraw= false
+			unbind      = true
 			
-			if map.orientation == 'orthogonal' then
-				local gx,gy,gx2,gy2 = floor( vx / tw ), floor( vy / th ),
-					floor( vx2 / tw ), floor( vy2 / th )
-				
-				gx,gy,gx2,gy2 = 
-					max(0,gx),
-					max(0,gy),
-					min(gx2,map.width),
-					min(gy2,map.height)
-				
-				tile_iterator = self:rectangle(gx,gy,gx2,gy2, true)
-			
-			elseif map.orientation == 'isometric' then
-				
-				tile_iterator = self:isoRectangle(vx,vy, vx2,vy2)
-				
-			elseif map.orientation == 'staggered' then
-				local gx,gy,gx2,gy2 = floor( vx / tw ), floor( vy / th ) * 2,
-					floor( vx2 / tw ), floor( vy2 / th ) * 2
-				
-				gx,gy,gx2,gy2 = 
-					max(0,gx),
-					max(0,gy),
-					min(gx2,map.width),
-					min(gy2,map.height)
-				
-				tile_iterator = self:rectangle(gx,gy, gx2,gy2, true)
-			end
-		else
-			tile_iterator = self:rectangle(0,0,map.width-1,map.height-1,true)
-		end
-		
-		for _,batch in pairs(self._batches) do
-			batch:bind()
-			batch:clear()
-		end
-		
-		
-		for tx,ty,tile in tile_iterator do
-		
-			local batch  = self._batches[tile.tileset]
-			local tileset= tile.tileset
-			
-			-- make batch if it doesn't exist
-			if not self._batches[tileset] then
-				local size   = map.width * map.height
-				batch        = love.graphics.newSpriteBatch(tile.tileset.image,size)
-				
-				self._batches[tileset] = batch
+			local tile_iterator = self:_getTileIterator()
+					
+			for _,batch in pairs(self._batches) do
 				batch:bind()
+				batch:clear()
 			end
 			
-			local qw,qh  = tileset.tilewidth , tileset.tileheight
+			for tx,ty,tile in tile_iterator do
+			
+				local batch  = self._batches[tile.tileset]
+				local tileset= tile.tileset
 				
-			local flipbits= self._gridflip:get(tx,ty) or 0
-			local flipX   = floor(flipbits / 4) == 1       
-			local flipY   = floor( (flipbits % 4) / 2) == 1
-			local flipDiag= flipbits % 2 == 1
-			
-			local x,y
-			
-			-- offsets to rotate about center
-			local ox,oy = qw/2,qh/2
-			
-			-- offsets to align to top left again
-			local dx,dy = ox,oy
-			
-			local sx,sy = flipX and -1 or 1, flipY and -1 or 1
-			local angle = 0
-			if flipDiag then
-				angle = math.pi/2
-				sx,sy = sy, sx*-1
+				-- make batch if it doesn't exist
+				if not self._batches[tileset] then
+					local size   = map.width * map.height
+					batch        = love.graphics.newSpriteBatch(tile.tileset.image,size)
+					
+					self._batches[tileset] = batch
+					batch:bind()
+				end
 				
-				-- rotated tile has switched dimensions
-				dx,dy = dy,dx
+				local x,y,dx,dy,angle,sx,sy,ox,oy = self:_getDrawParameters(tx,ty,tile)
 				
-				-- extra offset to align to bottom like Tiled
-				dy    = dy - (qw - map.tileheight)
-			else
-				dy    = dy - (qh - map.tileheight)
-			end
-			
-			if map.orientation == 'orthogonal' then
-		
-				x,y   = tx * map.tilewidth,
-						  ty * map.tileheight
-				
-			elseif map.orientation == 'isometric' then
-				x,y = map:fromIso(tx,ty)
-				
-				-- apex of tile (0,0) is point (0,0)
-				x   = x - (map.tilewidth/2)
-			elseif map.orientation == 'staggered' then
-				local offset  = ty % 2
-				local xoffset = (offset*0.5*map.tilewidth)
-				x             = tx * map.tilewidth + xoffset
-				y             = ty * map.tileheight*0.5
-			end
-			
-			batch[addQuad](batch, tile.quad, x+dx,y+dy, angle, sx,sy, ox,oy)
-				
-		end		
-
-	end
-			
-	for tileset,batch in pairs(self._batches) do
-		if unbind then batch:unbind() end
+				batch[addQuad](batch, tile.quad, x+dx,y+dy, angle, sx,sy, ox,oy)
+					
+			end		
 	
-		love.graphics.draw(batch, x,y, nil,nil,nil, ox-tileset.offsetX, oy-tileset.offsetY)
+		end
+		
+		for tileset,batch in pairs(self._batches) do
+			if unbind then batch:unbind() end
+		
+			love.graphics.draw(batch, x,y, nil,nil,nil, 
+				mox-tileset.offsetX, moy-tileset.offsetY)
+		end
+	else
+		love.graphics.push()
+		love.graphics.translate(x-mox,y-moy)
+		
+		local tile_iterator = self:_getTileIterator()
+		for tx,ty,tile in tile_iterator do
+			local x2,y2,dx,dy,angle,sx,sy,ox,oy = self:_getDrawParameters(tx,ty,tile)			
+			tile:draw(x2+dx+tile.tileset.offsetY,y2+dy+tile.tileset.offsetY, 
+				angle, sx,sy, ox,oy)
+		end
+		
+		love.graphics.pop()
 	end
 	love.graphics.setColor(r,g,b,a)
 end
