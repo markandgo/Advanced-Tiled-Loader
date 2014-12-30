@@ -2,6 +2,18 @@ Advanced Tiled Loader
 --------------------------------------------------------------------------------------
 
 CHANGES:
+0.10.0F (WIP)
+- Added Loader.load shortcut to module
+- Added support for image collection in tileset
+- Added support for non-batch drawing
+- Added _VERSION field to module
+- Removed parallax support
+- Removed layer:getOrientation
+- Changed offsetX/offsetY fields to ox/oy for layer classes
+- Changed layer:resetOrientation to layer:resetTileOrientation
+- Changed tile.terrain to reference terrain type directly
+- Tweaked miscellaneous stuff
+
 0.9.2F (2014/01/27)
 - Added support for terrain
 - Added Map:newImageLayer
