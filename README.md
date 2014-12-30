@@ -23,6 +23,6 @@ Example:
 	map = atl.load('map.tmx')
 	
 	function love.draw()
-		map.draw(x,y)
+		map:draw(x,y)
 	end
 ````
