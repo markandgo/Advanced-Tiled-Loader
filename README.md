@@ -1,5 +1,6 @@
-#Advanced Tiled Loader
+Advanced Tiled Loader
 ========
+
 Advanced Tiled Loader (ATL) loads and renders [Tiled](http://www.mapeditor.org/) maps inside of the [Löve2D](http://love2d.org) game framework.
 
 Currently compatible with Tiled **0.10.0**
@@ -19,10 +20,10 @@ Stable release:
 Example: 
 
 ````lua
-	atl = require 'src'
-	map = atl.load('map.tmx')
-	
-	function love.draw()
-		map:draw(x,y)
-	end
+atl = require 'src'
+map = atl.load('map.tmx')
+
+function love.draw()
+	map:draw(x,y)
+end
 ````
