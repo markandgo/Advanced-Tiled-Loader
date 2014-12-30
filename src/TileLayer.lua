@@ -49,10 +49,10 @@ function TileLayer:clear()
 end
 
 -- passing nil clears a tile
-function TileLayer:setTile(tx,ty,tile,orientation)
+function TileLayer:setTile(tx,ty,tile,flipbits)
 	self:set(tx,ty,tile)
-	if tile and orientation then 
-		self._gridflip:set(tx,ty,orientation)
+	if tile and flipbits then 
+		self._gridflip:set(tx,ty,flipbits)
 	else 
 		self._gridflip:set(tx,ty,0)
 	end
@@ -101,14 +101,9 @@ function TileLayer:rotateTile(tx,ty,amount)
 end
 
 -- Reset tile orientation
-function TileLayer:resetOrientation(tx,ty)
+function TileLayer:resetTileOrientation(tx,ty)
 	self._gridflip:set(tx,ty,0)
 	self._redraw = true
-end
-
--- Get tile orientation
-function TileLayer:getOrientation(tx,ty)
-	return self._gridflip:get(tx,ty)
 end
 
 function TileLayer:_getTileIterator()
