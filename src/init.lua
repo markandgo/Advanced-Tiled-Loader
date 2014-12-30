@@ -9,7 +9,7 @@ local MODULE_PATH  = (...) .. '.'
 
 -- Return the classes in a table
 local module = {
-	_VERSION    = '0.9.2F',
+	_VERSION    = '0.10.0F',
 	Map         = require(MODULE_PATH  .. "Map"),
 	TileLayer   = require(MODULE_PATH  .. "TileLayer"),
 	Tile        = require(MODULE_PATH  .. "Tile"),
