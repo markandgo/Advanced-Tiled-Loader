@@ -20,10 +20,7 @@ function ImageLayer:init(map,image,args)
 	self.visible    = (a.visible== nil and true) or a.visible
 	self.properties = a.properties or {}
 	self.imagesource= a.imagesource
-	self.parallaxX  = a.parallaxX or 1 -- 1 is normal speed
-	self.parallaxY  = a.parallaxY or 1 -- 1 is normal speed
-	self.offsetX    = a.offsetX or 0   -- x offset added to map position
-	self.offsetY    = a.offsetY or 0   -- y offset added to map position
+	self.ox,self.oy = a.ox or 0, a.oy or 0
 end
 
 function ImageLayer:draw(x,y)
@@ -31,13 +28,9 @@ function ImageLayer:draw(x,y)
 	
 	local map = self.map
 	
-	-- origin offset
-	local ox = (map.ox * self.parallaxX) - map.ox - self.offsetX
-	local oy = (map.oy * self.parallaxY) - map.oy - self.offsetY
-	
 	local r,g,b,a = love.graphics.getColor()
 	love.graphics.setColor(r,g,b,self.opacity*a)	
-	love.graphics.draw(self.image, x,y, nil,nil,nil, ox, oy)
+	love.graphics.draw(self.image, (x or 0)+self.ox,(y or 0)+self.oy)
 	love.graphics.setColor(r,g,b,a)
 end
 

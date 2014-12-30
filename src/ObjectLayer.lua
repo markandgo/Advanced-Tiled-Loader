@@ -29,11 +29,8 @@ function ObjectLayer:init(map,args)
 	self.opacity    = a.opacity or 1
 	self.properties = a.properties or {}
 	self.visible    = (a.visible== nil and true) or a.visible
-	self.parallaxX  = a.parallaxX or 1 -- 1 is normal speed
-	self.parallaxY  = a.parallaxY or 1 -- 1 is normal speed
-	self.offsetX    = a.offsetX or 0   -- offset added to map position
-	self.offsetY    = a.offsetY or 0   -- offset added to map position
 	self.linewidth  = a.linewidth or 2
+	self.ox,self.oy = a.ox or 0, a.oy or 0
 	
 	-- INIT:
 	self.objects    = {}
@@ -64,11 +61,10 @@ end
 function ObjectLayer:draw(x,y)
 	if not self.visible then return end
 		
+	x,y = x or 0,y or 0
 	local map= self.map
-	
-	-- origin offset
-	local ox = (map.ox * self.parallaxX) - map.ox - self.offsetX
-	local oy = (map.oy * self.parallaxY) - map.oy - self.offsetY
+	local ox = self.ox
+	local oy = self.oy
 	
 	if self._redraw then
 		self._redraw = false
@@ -77,8 +73,8 @@ function ObjectLayer:draw(x,y)
 		local vx,vy,vx2,vy2
 		if map._drawrange then
 			vx,vy,vx2,vy2 = unpack(map._drawrange)
-			vx,vy  = vx + ox, vy + oy
-			vx2,vy2= vx2 + ox, vy2 + oy
+			vx,vy  = vx - ox, vy - oy
+			vx2,vy2= vx2 - ox, vy2 - oy
 		end	
 		
 		local new_drawlist = {}
@@ -94,7 +90,7 @@ function ObjectLayer:draw(x,y)
 	end
 	
 	love.graphics.push()
-	love.graphics.translate(-ox+(x or 0),-oy+(y or 0))
+	love.graphics.translate(x+ox,y+oy)
 	local old_width = love.graphics.getLineWidth()
 	
 	love.graphics.setLineWidth(self.linewidth)

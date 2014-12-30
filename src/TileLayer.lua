@@ -31,10 +31,8 @@ function TileLayer:init(map,args)
 	self.opacity   = a.opacity or 1 
 	self.visible   = (a.visible == nil and true) or a.visible
 	self.properties= a.properties or {}
-	self.parallaxX = a.parallaxX or 1 -- 1 is normal speed
-	self.parallaxY = a.parallaxY or 1 -- 1 is normal speed
-	self.offsetX   = a.offsetX or 0   -- x offset added to map position
-	self.offsetY   = a.offsetY or 0   -- y offset added to map position
+	self.ox,self.oy= a.ox or 0, a.oy or 0
+	
 	-- INIT:
 	self._gridflip = Grid:new()
 	self._batches  = {} -- indexed by tileset
@@ -107,17 +105,14 @@ function TileLayer:resetTileOrientation(tx,ty)
 end
 
 function TileLayer:_getTileIterator()
-	-- origin offset
-	local ox = (map.ox * self.parallaxX) - map.ox - self.offsetX
-	local oy = (map.oy * self.parallaxY) - map.oy - self.offsetY
 	local tw,th = map.tilewidth,map.tileheight
 	local tile_iterator
 	
 	if map._drawrange then
 		local vx,vy,vx2,vy2 = unpack(map._drawrange)
 		-- apply drawing offsets
-		vx,vy  = vx + ox, vy + oy
-		vx2,vy2= vx2 + ox, vy2 + oy
+		vx,vy  = vx - self.ox, vy - self.oy
+		vx2,vy2= vx2 - self.ox, vy2 - self.oy
 		
 		if map.orientation == 'orthogonal' then
 			local gx,gy,gx2,gy2 = floor( vx / tw ), floor( vy / th ),
@@ -213,11 +208,9 @@ end
 function TileLayer:draw(x,y)
 	if not self.visible then return end
 	
+	x,y = x or 0,y or 0
 	local map = self.map
 	local unbind
-	
-	local mox = (map.ox * self.parallaxX) - map.ox - self.offsetX
-	local moy = (map.oy * self.parallaxY) - map.oy - self.offsetY
 	
 	local r,g,b,a = love.graphics.getColor()
 	love.graphics.setColor(r,g,b,self.opacity*a)
@@ -250,9 +243,9 @@ function TileLayer:draw(x,y)
 					batch:bind()
 				end
 				
-				local x,y,dx,dy,angle,sx,sy,ox,oy = self:_getDrawParameters(tx,ty,tile)
+				local x2,y2,dx,dy,angle,sx,sy,ox2,oy2 = self:_getDrawParameters(tx,ty,tile)
 				
-				batch[addQuad](batch, tile.quad, x+dx,y+dy, angle, sx,sy, ox,oy)
+				batch[addQuad](batch, tile.quad, x2+dx,y2+dy, angle, sx,sy, ox2,oy2)
 					
 			end		
 	
@@ -262,17 +255,17 @@ function TileLayer:draw(x,y)
 			if unbind then batch:unbind() end
 		
 			love.graphics.draw(batch, x,y, nil,nil,nil, 
-				mox-tileset.offsetX, moy-tileset.offsetY)
+				-self.ox-tileset.offsetX, -self.oy-tileset.offsetY)
 		end
 	else
 		love.graphics.push()
-		love.graphics.translate(x-mox,y-moy)
+		love.graphics.translate(x+self.ox,y+self.oy)
 		
 		local tile_iterator = self:_getTileIterator()
 		for tx,ty,tile in tile_iterator do
-			local x2,y2,dx,dy,angle,sx,sy,ox,oy = self:_getDrawParameters(tx,ty,tile)			
+			local x2,y2,dx,dy,angle,sx,sy,ox2,oy2 = self:_getDrawParameters(tx,ty,tile)			
 			tile:draw(x2+dx+tile.tileset.offsetY,y2+dy+tile.tileset.offsetY, 
-				angle, sx,sy, ox,oy)
+				angle, sx,sy, ox2,oy2)
 		end
 		
 		love.graphics.pop()

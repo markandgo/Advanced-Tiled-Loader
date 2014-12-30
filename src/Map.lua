@@ -32,8 +32,6 @@ function Map:init(width,height,tilewidth,tileheight,args)
 	
 	-- OPTIONAL:
 	self.orientation= a.orientation or 'orthogonal'
-	self.ox         = a.ox or 0 -- parallax origin offset
-	self.oy         = a.oy or 0
 	self.layers     = a.layers or {} -- indexed by name
 	self.tilesets   = a.tilesets or {} -- indexed by name
 	self.layerOrder = a.layerOrder or {} -- indexed by draw order
