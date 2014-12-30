@@ -8,7 +8,7 @@ Copyright (c) 2013-2014 Minh Ngo
 local MODULE_PATH  = (...) .. '.'
 
 -- Return the classes in a table
-return {
+local module = {
 	_VERSION    = '0.9.2F',
 	Map         = require(MODULE_PATH  .. "Map"),
 	TileLayer   = require(MODULE_PATH  .. "TileLayer"),
@@ -21,3 +21,9 @@ return {
 	Base64      = require(MODULE_PATH .. "Base64"),
 	Class       = require(MODULE_PATH .. "Class"),
 }
+
+function module.load(...)
+	return module.Loader.load(...)
+end
+
+return module
