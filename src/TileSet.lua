@@ -40,23 +40,24 @@ function TileSet:init(tilewidth,tileheight,image,firstgid,args)
 	self.terraintypes= {} -- index starts at 0
 	
 	-- INIT:
-	local tiles = self.tiles
-	local x,y   = self.margin, self.margin
-	assert(self.image,'Cannot make tiles without an Image!')
-   local iw,ih = self.image:getWidth(), self.image:getHeight()
-	local tw,th = self.tilewidth,self.tileheight
-	local id    = 0
-
-	for j = 1, self:rows() do
-		for i = 1, self:columns() do
-			local quad = love.graphics.newQuad(x,y,tw,th,iw,ih)
-			local tile = Tile:new(self,id,quad)
-			tiles[id]  = tile
-			x  = x + tw + self.spacing
-			id = id + 1
+	if self.image then
+		local tiles = self.tiles
+		local x,y   = self.margin, self.margin
+	   local iw,ih = self.image:getWidth(), self.image:getHeight()
+		local tw,th = self.tilewidth,self.tileheight
+		local id    = 0
+	
+		for j = 1, self:rows() do
+			for i = 1, self:columns() do
+				local quad = love.graphics.newQuad(x,y,tw,th,iw,ih)
+				local tile = Tile:new(self,id,quad)
+				tiles[id]  = tile
+				x  = x + tw + self.spacing
+				id = id + 1
+			end
+			x = self.margin
+			y = y + th + self.spacing
 		end
-		x = self.margin
-		y = y + th + self.spacing
 	end
 end
 

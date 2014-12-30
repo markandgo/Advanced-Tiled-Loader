@@ -16,10 +16,11 @@ local draw = love.graphics.drawq or love.graphics.draw
 local Tile = Class 'Tile' {}
 
 -- Creates a new tile and returns it.
-function Tile:init(tileset,id,quad,properties,terrain)
+function Tile:init(tileset,id,quadOrImage,properties,terrain)
 	self.tileset = tileset
 	self.id      = id
-	self.quad    = quad
+	self.quad    = quadOrImage:typeOf('Quad') and quadOrImage
+	self.image   = quadOrImage:typeOf('Image') and quadOrImage
 	
 	-- optional
 	self.properties = properties or {}
@@ -28,6 +29,7 @@ end
 
 -- Draws the tile at the given location 
 function Tile:draw(...)
+	if self.image then love.graphics.draw(self.image,...) return end
 	draw(self.tileset.image,self.quad,...)
 end
 

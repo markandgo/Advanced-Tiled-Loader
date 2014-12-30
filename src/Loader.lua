@@ -17,6 +17,7 @@ local base64     = require(MODULE_PATH .. 'Base64')
 local xmlparser  = require(MODULE_PATH .. 'external.xml')
 local deflate    = require(MODULE_PATH ..'external.deflate')
 local Map        = require(MODULE_PATH .. "Map")
+local Tile       = require(MODULE_PATH .. "Tile")
 local TileSet    = require(MODULE_PATH .. "TileSet")
 local TileLayer  = require(MODULE_PATH .. "TileLayer")
 local ObjectLayer= require(MODULE_PATH .. "ObjectLayer")
@@ -202,6 +203,13 @@ function Loader._expandMap(tmxmap)
 		end
 	end
 	
+	-- Can't use batch draw with an image collection (Tiled 0.10.0)
+	for _,tileset in pairs(map.tilesets) do
+		if not tileset.image then
+			map.batch_draw = false
+		end
+	end
+	
 	return map
 end
 
@@ -225,7 +233,9 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 	
 	local t             = tmxtileset
 	local args          = {name = t.name,spacing = t.spacing,margin = t.margin}
+	local tiles         = {}
 	local tileproperties= {}
+	local tileimages    = {}
 	local tileterrains  = {}
 	local terraintypes
 	
@@ -250,9 +260,14 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 		elseif etype == 'terraintypes' then
 			terraintypes = element
 		elseif etype == 'tile' then
+			tiles[element.id] = element
+		
 			for i,v in ipairs(element) do
 				if v[elementkey] == 'properties' then
 					tileproperties[element.id] = Loader._expandProperties(v)
+				elseif v[elementkey] == 'image' then
+					Loader._expandImage(v,tmxmap)
+					tileimages[element.id] = v.image
 				end
 			end
 			if element.terrain then
@@ -271,6 +286,12 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 		args.image,
 		t.firstgid,
 		args)
+		
+	if not args.image then
+		for id,element in pairs(tiles) do
+			tileset.tiles[id] = Tile(tileset,id,tileimages[id])
+		end
+	end
 		
 	-- Import terrain types
 	if terraintypes then
@@ -298,6 +319,11 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 	-- Import tile properties
 	for id,properties in pairs(tileproperties) do
 		tiles[id].properties = properties
+	end
+	
+	-- Import tile images
+	for id,image in pairs(tileimages) do
+		tiles[id].image = image
 	end
 		
 	return tileset

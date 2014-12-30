@@ -160,7 +160,12 @@ function TileLayer:_getTileIterator()
 end
 
 function TileLayer:_getDrawParameters(tx,ty,tile)
-	local qw,qh  = tile.tileset.tilewidth, tile.tileset.tileheight
+	local qw,qh
+	if tile.image then
+		qw,qh  = tile.image:getWidth(),tile.image:getHeight()
+	else
+		qw,qh  = tile.tileset.tilewidth, tile.tileset.tileheight
+	end
 		
 	local flipbits= self._gridflip:get(tx,ty) or 0
 	local flipX   = floor(flipbits / 4) == 1       
@@ -242,6 +247,7 @@ function TileLayer:draw(x,y)
 				
 				-- make batch if it doesn't exist
 				if not self._batches[tileset] then
+					assert(tileset.image, 'Unable to batch draw. One or more tileset contains an image collection.')
 					local size   = map.width * map.height
 					batch        = love.graphics.newSpriteBatch(tile.tileset.image,size)
 					
