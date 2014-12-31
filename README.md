@@ -13,6 +13,7 @@ Supports every known feature except for the following:
 * Object rotation
 * Specifying draw order
 * Tile animation
+* Tile collision objects
 
 Stable release:
 [v0.9.2F](https://github.com/markandgo/Advanced-Tiled-Loader/releases/tag/v0.9.2F)
