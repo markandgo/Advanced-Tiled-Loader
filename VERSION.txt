@@ -7,8 +7,10 @@ CHANGES:
 - Added support for image collection in tileset
 - Added support for non-batch drawing
 - Added _VERSION field to module
+- Added Tile:getWidth/getHeight
 - Removed parallax support
 - Removed layer:getOrientation
+- Fixed drawing non-iso objects with images
 - Changed offsetX/offsetY fields to ox/oy for layer classes
 - Changed layer:resetOrientation to layer:resetTileOrientation
 - Changed tile.terrain to reference terrain type directly

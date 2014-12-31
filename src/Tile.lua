@@ -27,6 +27,14 @@ function Tile:init(tileset,id,quadOrImage,properties,terrain)
 	self.terrain    = terrain
 end
 
+function Tile:getWidth()
+	return self.image and self.image:getWidth() or self.tileset.tilewidth
+end
+
+function Tile:getHeight()
+	return self.image and self.image:getHeight() or self.tileset.tileheight
+end
+
 -- Draws the tile at the given location 
 function Tile:draw(...)
 	if self.image then love.graphics.draw(self.image,...) return end
