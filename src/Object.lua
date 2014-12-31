@@ -112,7 +112,8 @@ function Object:draw()
 	
 	love.graphics.push()
 	
-	if isIso and not self.gid then
+	if isIso then
+		if not self.gid then
 --[[
 	length of tile diagonal in isometric coordinates: 
 		sqrt(th*th + th*th) = sqrt(2) * th = a
@@ -131,12 +132,13 @@ function Object:draw()
 		-------
 ]]
 		
-		local w_ratio   = tw/th
-
-		love.graphics.scale(h_to_diag*w_ratio,h_to_diag)
-		love.graphics.rotate(octant)
-	elseif self.gid then
-		x,y = map:fromIso(x/th,y/th)
+			local w_ratio   = tw/th
+	
+			love.graphics.scale(h_to_diag*w_ratio,h_to_diag)
+			love.graphics.rotate(octant)
+		else
+			x,y = map:fromIso(x/th,y/th)
+		end
 	end
 	
 	love.graphics.translate(x,y)
