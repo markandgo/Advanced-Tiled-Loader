@@ -233,11 +233,11 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 	
 	local t             = tmxtileset
 	local args          = {name = t.name,spacing = t.spacing,margin = t.margin}
-	local tiles         = {}
+	local tmxtiles      = {}
 	local tileproperties= {}
 	local tileimages    = {}
 	local tileterrains  = {}
-	local terraintypes
+	local terraintypes  = {}
 	
 	for i,element in ipairs(tmxtileset) do
 		local etype = element[elementkey]
@@ -260,8 +260,8 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 		elseif etype == 'terraintypes' then
 			terraintypes = element
 		elseif etype == 'tile' then
-			tiles[element.id] = element
-		
+			tmxtiles[element.id] = element
+			
 			for i,v in ipairs(element) do
 				if v[elementkey] == 'properties' then
 					tileproperties[element.id] = Loader._expandProperties(v)
@@ -286,44 +286,35 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 		args.image,
 		t.firstgid,
 		args)
-		
-	if not args.image then
-		for id,element in pairs(tiles) do
-			tileset.tiles[id] = Tile(tileset,id,tileimages[id])
-		end
-	end
-		
+	
 	-- Import terrain types
-	if terraintypes then
-		for i,terrain in ipairs(terraintypes) do
-			local properties
-			for i,v in ipairs(terrain) do
-				if v[elementkey] == 'properties' then
-					properties = Loader._expandProperties(v)
-				end
+	for i,terrain in ipairs(terraintypes) do
+		local properties
+		for i,v in ipairs(terrain) do
+			if v[elementkey] == 'properties' then
+				properties = Loader._expandProperties(v)
 			end
-			tileset:newTerrain(terrain.name,terrain.tile,properties)
 		end
+		tileset:newTerrain(terrain.name,terrain.tile,properties)
 	end
 		
-	-- Import terrain to tile
 	local tiles = tileset.tiles
-	for id,terrain in pairs(tileterrains) do
-		for i = 1,4 do
-			terrain[i] = tileset.terraintypes[terrain[i]]
+	for id,tmxtile in pairs(tmxtiles) do
+		-- Have to manually create tile for tileset with image collection
+		if not args.image then
+			tiles[id] = Tile(tileset,id,tileimages[id])
 		end
-	
-		tiles[id].terrain = terrain
-	end	
-	
-	-- Import tile properties
-	for id,properties in pairs(tileproperties) do
-		tiles[id].properties = properties
-	end
-	
-	-- Import tile images
-	for id,image in pairs(tileimages) do
-		tiles[id].image = image
+		tiles[id].properties= tileproperties[id]
+		tiles[id].image     = tileimages[id]
+		tiles[id].terrain   = tileterrains[id]
+		
+		-- Replace terrain numbers in tables with direct reference
+		local terrain = tiles[id].terrain
+		if terrain then
+			for i = 1,4 do
+				terrain[i] = tileset.terraintypes[terrain[i]]
+			end
+		end
 	end
 		
 	return tileset
