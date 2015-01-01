@@ -25,12 +25,16 @@ end
 
 function ImageLayer:draw(x,y)
 	if not self.visible then return end
-	
 	local map = self.map
+		
+	local ox,oy = self.ox,self.oy
+	if map.orientation == 'isometric' then
+		ox = self.ox - map.tilewidth*map.width*0.5
+	end
 	
 	local r,g,b,a = love.graphics.getColor()
 	love.graphics.setColor(r,g,b,self.opacity*a)	
-	love.graphics.draw(self.image, (x or 0)+self.ox,(y or 0)+self.oy)
+	love.graphics.draw(self.image, x,y, nil,nil,nil, -ox,-oy)
 	love.graphics.setColor(r,g,b,a)
 end
 

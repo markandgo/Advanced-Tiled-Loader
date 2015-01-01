@@ -520,6 +520,7 @@ function Loader._expandImageLayer(tmxlayer,tmxmap,map)
 		properties = properties,
 		imagesource= image_element.source,
 	})
+	imagelayer.ox, imagelayer.oy = tmxlayer.x, tmxlayer.y
 	
 	return imagelayer
 end
