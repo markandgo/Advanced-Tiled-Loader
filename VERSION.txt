@@ -1,17 +1,22 @@
-Advanced Tiled Loader
+Tidal
 --------------------------------------------------------------------------------------
 
 CHANGES:
-0.10.0F (WIP)
+0.10.0 (2015/01/03)
 - Added Loader.load shortcut to module
 - Added support for image collection in tileset
 - Added support for non-batch drawing
 - Added _VERSION field to module
 - Added Tile:getWidth/getHeight
 - Added drawing imagelayers at correct position shown on Tiled
+- Added support for object rotation
+- Added Tile animation
+- Added support for object flipping
+- Added support for importing tile collision data
 - Removed parallax support
 - Removed layer:getOrientation
 - Fixed drawing non-iso objects with images
+- Changed name of library to "Tidal"
 - Changed offsetX/offsetY fields to ox/oy for layer classes
 - Changed layer:resetOrientation to layer:resetTileOrientation
 - Changed tile.terrain to reference terrain type directly

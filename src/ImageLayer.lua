@@ -2,7 +2,7 @@
 This code falls under the terms of the MIT license.
 The full license can be found in "license.txt".
 
-Copyright (c) 2013-2014 Minh Ngo
+Copyright (c) 2015 Minh Ngo
 ]]
 
 local MODULE_PATH= (...):match('^.+[%.\\/]')

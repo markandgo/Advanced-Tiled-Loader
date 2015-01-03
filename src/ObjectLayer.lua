@@ -2,7 +2,7 @@
 This code falls under the terms of the MIT license.
 The full license can be found in "license.txt".
 
-Copyright (c) 2013-2014 Minh Ngo
+Copyright (c) 2015 Minh Ngo
 ]]
 
 
@@ -38,13 +38,9 @@ function ObjectLayer:init(map,args)
 	self._redraw    = true
 end
 
-
--- Creates a new object, automatically inserts it into the layer, and then returns it
-function ObjectLayer:newObject(x,y,gid,args, position)
-	local object = Object:new(self,x,y,gid,args)
-   table.insert(self.objects, position or #self.objects+1, object) 
+function ObjectLayer:addObject(object,position)
+	table.insert(self.objects, position or #self.objects+1, object) 
    self._redraw = true
-   return object
 end
 
 local function sort_cb(obj1,obj2)

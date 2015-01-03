@@ -2,14 +2,14 @@
 This code falls under the terms of the MIT license.
 The full license can be found in "license.txt".
 
-Copyright (c) 2013-2014 Minh Ngo
+Copyright (c) 2015 Minh Ngo
 ]]
 
 local MODULE_PATH  = (...) .. '.'
 
 -- Return the classes in a table
 local module = {
-	_VERSION    = '0.10.0F',
+	_VERSION    = '0.10.0',
 	Map         = require(MODULE_PATH  .. "Map"),
 	TileLayer   = require(MODULE_PATH  .. "TileLayer"),
 	Tile        = require(MODULE_PATH  .. "Tile"),

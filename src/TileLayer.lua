@@ -2,7 +2,7 @@
 This code falls under the terms of the MIT license.
 The full license can be found in "license.txt".
 
-Copyright (c) 2013-2014 Minh Ngo
+Copyright (c) 2015 Minh Ngo
 ]]
 
 local MODULE_PATH= (...):match('^.+[%.\\/]')
@@ -35,8 +35,8 @@ function TileLayer:init(map,args)
 	
 	-- INIT:
 	self._gridflip = Grid:new()
-	self._batches  = {} -- indexed by tileset
-	self._redraw   = true
+	self._batches  = {}   -- indexed by tileset
+	self._redraw   = true -- redraw batches
 end
 
 function TileLayer:clear()

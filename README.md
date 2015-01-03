@@ -1,28 +1,40 @@
-Advanced Tiled Loader
+Tidal
 ========
 
-Advanced Tiled Loader (ATL) loads and renders [Tiled](http://www.mapeditor.org/) maps inside of the [Löve2D](http://love2d.org) game framework.
+Tidal loads and renders [Tiled](http://www.mapeditor.org/). 
+Requires [LÖVE](http://love2d.org)
 
 Currently compatible with Tiled **0.10.0**
 
-This was a fork of Kadoba's Advanced Tiled Loader. 
+This was a fork of Kadoba's [Advanced Tiled Loader](https://github.com/Kadoba/Advanced-Tiled-Loader). 
 The majority of the code has been rewritten from the ground up. 
 Latest update is found on the master branch.
 
 Supports every known feature except for the following:
-* Object rotation
 * Specifying draw order
-* Tile animation
-* Tile collision objects
 
 Stable release:
-[v0.9.2F](https://github.com/markandgo/Advanced-Tiled-Loader/releases/tag/v0.9.2F)
+[v0.10.0](https://github.com/markandgo/Tidal/releases/tag/v0.10.0)
 
 Example: 
 
 ````lua
-atl = require 'src'
-map = atl.load('map.tmx')
+tidal          = require 'src'
+map            = tidal.load('map.tmx')
+map.batch_draw = true -- Enable spritebatches (default)
+
+layer = map.layerOrder[1]  -- Get lowest layer
+layer.opacity      = 0.5   -- Set layer transparency
+layer.ox, layer.oy = 5,5   -- Offset layer by these many pixels
+layer.visible      = true  -- Set layer visibility
+
+gid  = 1
+tile = map.tiles[gid]             -- Get tile
+print(tile.properties.myproperty) -- Get set property in Tiled
+
+function love.update(dt)
+	map:update(dt) -- For animating tiles
+end
 
 function love.draw()
 	map:draw(x,y)

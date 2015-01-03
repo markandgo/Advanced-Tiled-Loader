@@ -2,7 +2,7 @@
 This code falls under the terms of the MIT license.
 The full license can be found in "license.txt".
 
-Copyright (c) 2013-2014 Minh Ngo
+Copyright (c) 2015 Minh Ngo
 ]]
 
 local MODULE_PATH= (...):match('^.+[%.\\/]')
@@ -38,7 +38,7 @@ function Map:init(width,height,tilewidth,tileheight,args)
 	self.tiles      = a.tiles or {} -- indexed by gid
 	self.properties = a.properties or {}
 	self._drawrange = nil -- {x,y,x2,y2} no drawrange means draw everything
-	self.batch_draw = true
+	self.batch_draw = true -- Disable for image collection / tile animation
 end
 
 function Map:newTileSet(tilewidth,tileheight,image,firstgid,args)
@@ -128,6 +128,12 @@ function Map:callback(cb_name, ...)
 	for i=1,#order do
 		local layer = order[i]
       if layer[cb_name] then layer[cb_name](layer, ...) end
+	end
+end
+
+function Map:update(dt)
+	for k,tile in pairs(self.tiles) do
+		tile:update(dt)
 	end
 end
 

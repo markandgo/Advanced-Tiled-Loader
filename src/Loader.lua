@@ -2,7 +2,7 @@
 This code falls under the terms of the MIT license.
 The full license can be found in "license.txt".
 
-Copyright (c) 2013-2014 Minh Ngo
+Copyright (c) 2015 Minh Ngo
 ]]
 
 
@@ -20,6 +20,7 @@ local Map        = require(MODULE_PATH .. "Map")
 local Tile       = require(MODULE_PATH .. "Tile")
 local TileSet    = require(MODULE_PATH .. "TileSet")
 local TileLayer  = require(MODULE_PATH .. "TileLayer")
+local Object     = require(MODULE_PATH .. "Object")
 local ObjectLayer= require(MODULE_PATH .. "ObjectLayer")
 local ImageLayer = require(MODULE_PATH .. "ImageLayer")
 local imageCache = setmetatable({},{__mode= 'v'})
@@ -105,28 +106,45 @@ handler.text = function(self,text)
 end
 
 -- should return map else false and error string
-
 function Loader._load(filename,chunk_size)
-	local ok,map = xpcall(function()
+	local status,map = xpcall(function()
 		local tmxmap = Loader._parseTMX(filename,chunk_size)
 		-- Store the chunk stuff for streaming in the parsed table!
 		tmxmap.chunk_size   = chunk_size
 		tmxmap.chunk_counter= 0
 		return Loader._expandMap( tmxmap )
 	end,debug.traceback)
-	if not ok then local error = map; return ok,error end
+	if not status then local error = map; return nil,error end
 	return map
 end
 
 function Loader.load(filename,chunk_size)
 	if chunk_size then
 		assert(chunk_size > 0, 'Chunk size must be greater than 0!')
-		return coroutine.wrap(function()
-			local map,err = Loader._load(filename,chunk_size)
-			while true do
+		
+		local proxy = {
+			resolved = false,
+			run = coroutine.wrap(function()
+				local map,err = Loader._load(filename,chunk_size)
 				coroutine.yield(map,err)
-			end
-		end)
+			end),
+			update = function(self)
+				if self.resolved then return end
+				local map,err = self.run()
+				if map or err then self.resolved = true end
+				if map and self._onLoad then self._onLoad(map) end
+				if err and self._onError then self._onError(err) end
+			end,
+			onLoad = function(self,callback)
+				self._onLoad = callback
+				return self
+			end,
+			onError = function(self,callback)
+				self._onError = callback
+				return self
+			end,
+		}
+		return proxy
 	end
 	return Loader._load(filename)
 end
@@ -210,6 +228,14 @@ function Loader._expandMap(tmxmap)
 		end
 	end
 	
+	-- Disable batch drawing when tiles are animated
+	for _,tile in pairs(map.tiles) do
+		if tile.animated then
+			map.batch_draw = false
+			break
+		end
+	end
+	
 	return map
 end
 
@@ -238,6 +264,8 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 	local tileimages    = {}
 	local tileterrains  = {}
 	local terraintypes  = {}
+	local animations    = {}
+	local objectgroups  = {}
 	
 	for i,element in ipairs(tmxtileset) do
 		local etype = element[elementkey]
@@ -268,6 +296,10 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 				elseif v[elementkey] == 'image' then
 					Loader._expandImage(v,tmxmap)
 					tileimages[element.id] = v.image
+				elseif v[elementkey] == 'animation' then
+					animations[element.id] = v
+				elseif v[elementkey] == 'objectgroup' then
+					objectgroups[element.id] = v
 				end
 			end
 			if element.terrain then
@@ -308,11 +340,33 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 		tiles[id].image     = tileimages[id]
 		tiles[id].terrain   = tileterrains[id]
 		
+		local tmxanimation = animations[id]
+		if tmxanimation then
+			tiles[id].animated = true
+			tiles[id].current_frame = 1
+			tiles[id].current_frame_id = tmxanimation[1].tileid
+			tiles[id].frame_durations = {}
+			tiles[id].frame_ids = {}
+						
+			-- Duration is in milliseconds			
+			for i,tmxframe in ipairs(tmxanimation) do
+				tiles[id].frame_ids[i] = tmxframe.tileid
+				tiles[id].frame_durations[i] = tmxframe.duration/1000
+			end
+		end
+		
 		-- Replace terrain numbers in tables with direct reference
 		local terrain = tiles[id].terrain
 		if terrain then
 			for i = 1,4 do
 				terrain[i] = tileset.terraintypes[terrain[i]]
+			end
+		end
+		
+		for id,objectgroup in pairs(objectgroups) do
+			tiles[id].objects = {}
+			for _,tmxobject in ipairs(objectgroup) do
+				table.insert(tiles[id].objects,Loader._expandObject(tmxobject))
 			end
 		end
 	end
@@ -353,6 +407,13 @@ function Loader._expandImage(tmximage,tmxmap)
 	tmximage.image = image
 end
 
+local divbits = 2^29
+function Loader._separateGidAndFlipBits(num)
+	local gid   = num % divbits
+	local flips = math.floor(num / 2^29)
+	return gid,flips
+end
+
 function Loader._streamLayerData(tmxlayer,tmxmap)
 	local data
 	for i = 1,#tmxlayer do
@@ -377,7 +438,6 @@ function Loader._streamLayerData(tmxlayer,tmxmap)
 	end
 	
 	return coroutine.wrap(function()
-		local divbits = 2^29
 		local pattern = data.encoding == 'base64' and '(....)' or '(%d+)'
 		local count   = 0
 		local w,h     = tmxlayer.width or tmxmap.width,tmxlayer.height or tmxmap.height
@@ -396,8 +456,7 @@ function Loader._streamLayerData(tmxlayer,tmxmap)
 			-- bit 31: yflip
 			-- bit 30: antidiagonal flip
 			
-			local gid         = num % divbits
-			local flips       = math.floor(num / 2^29)
+			local gid,flips = Loader._separateGidAndFlipBits(num)
 			
 			local y = math.ceil(count/w) - 1
 			local x = count - (y)*w -1
@@ -458,39 +517,7 @@ function Loader._expandObjectGroup(tmxlayer,tmxmap,map)
 		if etype == 'object' then
 			Loader._chunkCheck(tmxmap)
 			
-			local e = element
-			
-			local args = {
-				name      = e.name,
-				type      = e.type,
-				width     = e.width,
-				height    = e.height,
-				visible   = (e.visible == nil and true) or e.visible,
-				
-				polygon   = nil,
-				polyline  = nil,
-				properties= nil,
-			}
-			
-			for i,sub in ipairs(e) do
-				local etype = sub[elementkey]
-				if etype == 'properties' then
-					args.properties = Loader._expandProperties(sub)
-				end
-				if etype == 'polygon' or etype == 'polyline' then
-					local points = sub.points
-					local t      = {}
-					for num in points:gmatch '-?%d+' do
-						table.insert(t,tonumber(num))
-					end
-					args[etype] = t
-				end
-				if etype == 'ellipse' then
-					args.ellipse = true
-				end
-			end
-			
-			layer:newObject(e.x,e.y,e.gid,args)
+			layer:addObject(Loader._expandObject(element,layer))
 			
 		elseif etype == 'properties' then
 			layer.properties = Loader._expandProperties(element)
@@ -498,6 +525,49 @@ function Loader._expandObjectGroup(tmxlayer,tmxmap,map)
 	end
 	
 	return layer
+end
+
+function Loader._expandObject(tmxobject, layer)
+	local gid,flipbits
+	local e = tmxobject
+	
+	if e.gid then
+		gid,flipbits = Loader._separateGidAndFlipBits(e.gid)
+	end
+	
+	local args = {
+		name      = e.name,
+		type      = e.type,
+		width     = e.width,
+		height    = e.height,
+		visible   = (e.visible == nil and true) or e.visible,
+		rotation  = e.rotation,
+		flipbits  = flipbits,
+		
+		polygon   = nil,
+		polyline  = nil,
+		properties= nil,
+	}
+	
+	for i,sub in ipairs(e) do
+		local etype = sub[elementkey]
+		if etype == 'properties' then
+			args.properties = Loader._expandProperties(sub)
+		end
+		if etype == 'polygon' or etype == 'polyline' then
+			local points = sub.points
+			local t      = {}
+			for num in points:gmatch '-?%d+' do
+				table.insert(t,tonumber(num))
+			end
+			args[etype] = t
+		end
+		if etype == 'ellipse' then
+			args.ellipse = true
+		end
+	end
+	
+	return Object(layer, e.x,e.y, gid, args)
 end
 
 function Loader._expandImageLayer(tmxlayer,tmxmap,map)

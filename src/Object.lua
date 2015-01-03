@@ -2,11 +2,17 @@
 This code falls under the terms of the MIT license.
 The full license can be found in "license.txt".
 
-Copyright (c) 2013-2014 Minh Ngo
+Copyright (c) 2015 Minh Ngo
 ]]
 
 local MODULE_PATH= (...):match('^.+[%.\\/]')
 local Class      = require(MODULE_PATH .. 'Class')
+
+local rotate = function(x,y, angle)
+	local xnew = x*math.cos(angle) - y*math.sin(angle)
+	local ynew = x*math.sin(angle) + y*math.cos(angle)
+	return xnew,ynew
+end
 
 -- -= Object =-
 
@@ -33,16 +39,19 @@ function Object:init(layer,x,y,gid,args)
 	self.type      = a.type or ''
 	
 	self.drawmode  = a.drawmode or 'line'
-	self.width     = a.width or 0
-	self.height    = a.height or 0
+	self.width     = a.width
+	self.height    = a.height
 	self.visible   = (a.visible == nil and true) or a.visible
+	self.rotation  = a.rotation or 0 -- in degrees
 	self.properties= a.properties or {}
+	self.flipbits  = a.flipbits or 0
+	self.draw_bbox = false
 	
 	-- INIT:
 	
 	self._bbox     = {0,0,0,0}
 	
-	Object.updateAABB(self)
+	if self.layer then Object.updateAABB(self) end
 end
 
 
@@ -64,12 +73,36 @@ function Object:updateAABB()
 		for i = 1,#points,2 do
 			local px,py = points[i] , points[i+1]
 			if isIso then px,py = map:fromIso( px / th, py / th ) end
+			
+			if self.rotation then
+				px,py = rotate(px,py,math.rad(self.rotation))
+			end
+			
 			px,py       = px + x, py + y
 			left,right  = math.min(left or px,px), math.max(right or px,px)
 			top,bot     = math.min(top or py,py),  math.max(bot or py,py)
 		end
-	else
-		if isIso then 
+	else 
+		local x0,y0,x1,y1,x2,y2,x3,y3 = 0,0
+		local w,h = self.width or 0, self.height or 0
+		
+		if self.gid then
+			local tile = self.layer.map.tiles[self.gid]
+			w,h = tile:getWidth(), tile:getHeight()
+		
+			-- Note that the bottom center is the origin for iso images
+			if isIso then
+				x0,y0 = -w/2,0
+				x1,y1 = w/2,0
+				x2,y2 = w/2,-h
+				x3,y3 = -w/2,-h
+			else
+				x1,y1 = w,0
+				x2,y2 = w,-h
+				x3,y3 = 0,-h
+			end
+			
+		elseif isIso then 
 --[[
       0,0
        /\
@@ -80,16 +113,28 @@ x3,y3/    \x1,y1
        \/x2,y2
 ]]
 		
-			local w,h  = self.width/th, self.height/th
-			local x1,y1= map:fromIso(w,0)
-			local x2,y2= map:fromIso(w,h)
-			local x3,y3= map:fromIso(0,h)
+			w,h  = w/th, h/th
+			x1,y1 = map:fromIso(w,0)
+			x2,y2 = map:fromIso(w,h)
+			x3,y3 = map:fromIso(0,h)
 			
-			left,right = x3 + x, x1 + x
-			top,bot    = y, y2 + y
 		else
-			left,top,right,bot = x,y,x+self.width,y+self.height
+			x1,y1 = w,0
+			x2,y2 = w,h
+			x3,y3 = 0,h
 		end
+		
+		if self.rotation ~= 0 then
+			local angle_rad = math.rad(self.rotation)
+			
+			x0,y0 = rotate(x0,y0, angle_rad)
+			x1,y1 = rotate(x1,y1, angle_rad)
+			x2,y2 = rotate(x2,y2, angle_rad)
+			x3,y3 = rotate(x3,y3, angle_rad)
+		end
+		
+		left,right = math.min(x0+x, x1+x, x2+x, x3+x), math.max(x0+x, x1+x, x2+x, x3+x)
+		top,bot    = math.min(y0+y, y1+y, y2+y, y3+y), math.max(y0+y, y1+y, y2+y, y3+y)
 	end
 	
 	local bb = self._bbox
@@ -106,14 +151,21 @@ function Object:draw()
 	local map   = self.layer.map
 	local tw,th = map.tilewidth, map.tileheight
 	
-	local x,y      = self.x,self.y
-	local isIso    = map.orientation == 'isometric'
-	local points   = self.polyline or self.polygon
+	local x,y   = self.x,self.y
+	local isIso = map.orientation == 'isometric'
+	local points= self.polyline or self.polygon
 	
 	love.graphics.push()
 	
 	if isIso then
-		if not self.gid then
+		x,y = map:fromIso(x/th,y/th)
+	end
+	
+	love.graphics.translate(x,y)
+	love.graphics.rotate(math.rad(self.rotation))
+	
+	
+	if isIso and not self.gid then
 --[[
 	length of tile diagonal in isometric coordinates: 
 		sqrt(th*th + th*th) = sqrt(2) * th = a
@@ -132,16 +184,11 @@ function Object:draw()
 		-------
 ]]
 		
-			local w_ratio   = tw/th
-	
-			love.graphics.scale(h_to_diag*w_ratio,h_to_diag)
-			love.graphics.rotate(octant)
-		else
-			x,y = map:fromIso(x/th,y/th)
-		end
+		local w_ratio   = tw/th
+
+		love.graphics.scale(h_to_diag*w_ratio,h_to_diag)
+		love.graphics.rotate(octant)
 	end
-	
-	love.graphics.translate(x,y)
 	
 	-- The object is a polyline.
 	if self.polyline then
@@ -158,8 +205,20 @@ function Object:draw()
 		local tile   = map.tiles[self.gid]
 		local tileset= tile.tileset
 		
+		local flipX = math.floor(self.flipbits / 4) == 1       
+		local flipY = math.floor( (self.flipbits % 4) / 2) == 1
+		local ox,oy = 0,0
+		local dx,dy = 0,0
+		local sx,sy = 1,1
+		
+		if (flipX or flipY) then
+			ox,oy = tile:getWidth()/2,tile:getHeight()/2
+			sx,sy = flipX and -1 or 1, flipY and -1 or 1
+			dx,dy = ox,oy
+		end
+		
 		-- align bottom center (iso) / left (ortho)
-		tile:draw((isIso and 0.5 or 0) * -tileset.tilewidth,-tileset.tileheight)
+		tile:draw((isIso and 0.5 or 0) * -tile:getWidth() + dx,-tile:getHeight() + dy, nil, sx,sy, ox,oy)
 	elseif self.ellipse then
 		local w,h= self.width,self.height
 		local r  = w/2
@@ -168,10 +227,15 @@ function Object:draw()
 		love.graphics.circle(self.drawmode, r,r, r)
 	else
 		local w,h= self.width,self.height
-		love.graphics.rectangle(self.drawmode, 0,0, w,h )
+		love.graphics.rectangle(self.drawmode, 0,0, w or 0,h or 0)
 	end
 	
 	love.graphics.pop()
+	
+	if self.draw_bbox then
+		local bx,by,bx2,by2 = unpack(self._bbox)
+		love.graphics.rectangle('line',bx,by,bx2-bx,by2-by)
+	end
 end
 
 

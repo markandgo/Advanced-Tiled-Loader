@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="27" height="19" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" source="desert.tsx"/>
+ <layer name="Ground" width="27" height="19">
+  <data encoding="base64" compression="zlib">
+   eJy91EkPgjAQBeBRDi4k4pKIS0QUBdz9/7/Od4DUTEqdxraH79bm8ZhmMiLKPJpAAlPPOc+AWSF77WEJKawC9OpBHyLLe2vYWNjCCMYQW2Yd4GihEGbVhqwTXOHsKMvUqxD2tM16ec7KoTT0ujezf/yRxWeUd2R14XPkWbo3ULNeb2EW76vrVbGskvQ9Xb55nsldmn8kdWNZg8aQ1D4xiYTnWruvrITUHm6/wSQWntPdS0nt4RnMf1gIz+nuSWflwgd/mDWv
+  </data>
+ </layer>
+ <objectgroup color="#ff0000" name="Object Layer 1">
+  <object x="64" y="32" width="160" height="96"/>
+  <object x="224" y="32">
+   <polygon points="0,0 96,0 128,32 128,64 96,96 0,96"/>
+  </object>
+  <object x="64" y="128" width="160" height="96">
+   <ellipse/>
+  </object>
+  <object gid="2147483682" x="457" y="123" rotation="45"/>
+  <object x="416" y="128">
+   <polyline points="0,0 0,-96 64,-32 128,-96 128,0"/>
+  </object>
+  <object gid="1073741870" x="416" y="96"/>
+ </objectgroup>
+</map>
