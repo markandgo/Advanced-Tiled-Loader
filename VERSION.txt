@@ -1,7 +1,22 @@
-Tidal
+Tidal Changelog
 --------------------------------------------------------------------------------------
 
 CHANGES:
+0.10.1 (2015/01/010)
+- Added ObjectLayer:removeObject
+- Added ObjectLayer:newObject
+- Added Map:removeLayer
+- Added optional argument for setting batch draw per map
+- Added optional argument for setting bbox draw per object
+- Changed Object:addObject to remove object from previous layer and 
+  reference the new layer
+- Changed image parameter in TileSet constructor to accept a table of 
+  images
+- Changed Map:setDrawRange to always redraw layers afterward
+- Changed Map:newCustomLayer to fill in fields for custom table
+- Changed tilelayer to clear batches when switching to non-batch drawing
+- Miscellaneous tweaks and cleanups
+
 0.10.0 (2015/01/03)
 - Added Loader.load shortcut to module
 - Added support for image collection in tileset

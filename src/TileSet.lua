@@ -19,12 +19,12 @@ TileSet.__call   = function(self,id)
 end
 
 -- Creates a new tileset.
-function TileSet:init(tilewidth,tileheight,image,firstgid,args)
+function TileSet:init(tilewidth,tileheight,imageOrTable,firstgid,args)
 	local a = args or {}
 	
 	self.tilewidth  = tilewidth
 	self.tileheight = tileheight
-	self.image      = image
+	self.image      = type(imageOrTable) ~= 'table' and imageOrTable or nil
 	self.firstgid   = firstgid
 	-- OPTIONAL:
 	self.name       = a.name or 'Unnamed TileSet'
@@ -57,6 +57,10 @@ function TileSet:init(tilewidth,tileheight,image,firstgid,args)
 			end
 			x = self.margin
 			y = y + th + self.spacing
+		end
+	else
+		for id,image in pairs(imageOrTable) do
+			self.tiles[id] = Tile(self,id,image)
 		end
 	end
 end

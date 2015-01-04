@@ -14,7 +14,7 @@ Supports every known feature except for the following:
 * Specifying draw order
 
 Stable release:
-[v0.10.0](https://github.com/markandgo/Tidal/releases/tag/v0.10.0)
+[v0.10.1](https://github.com/markandgo/Tidal/releases/tag/v0.10.1)
 
 Example: 
 
@@ -27,6 +27,7 @@ layer = map.layerOrder[1]  -- Get lowest layer
 layer.opacity      = 0.5   -- Set layer transparency
 layer.ox, layer.oy = 5,5   -- Offset layer by these many pixels
 layer.visible      = true  -- Set layer visibility
+tile = layer:get(tx,ty)    -- Return tile at tx,ty
 
 gid  = 1
 tile = map.tiles[gid]             -- Get tile

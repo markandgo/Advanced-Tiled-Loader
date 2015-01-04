@@ -6,7 +6,6 @@ Copyright (c) 2015 Minh Ngo
 ]]
 
 -- Simple class with inspiration from other class modules
--- class commons compatible
 -------------------------------------------------
 local Class,base
 

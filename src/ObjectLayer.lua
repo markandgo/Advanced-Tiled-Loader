@@ -39,8 +39,30 @@ function ObjectLayer:init(map,args)
 end
 
 function ObjectLayer:addObject(object,position)
+	if object.layer then
+		object.layer:removeObject(object)
+	end
+
 	table.insert(self.objects, position or #self.objects+1, object) 
    self._redraw = true
+   object.layer = self
+end
+
+function ObjectLayer:removeObject(object)
+	for k,an_object in pairs(self.objects) do
+		if an_object == object then
+			table.remove(self.objects,k)
+			object.layer = nil
+			self._redraw = true
+			return object
+		end
+	end
+end
+
+function ObjectLayer:newObject(x,y,gid,args,position)
+	local object = Object(self,x,y,gid,args)
+	self:addObject(object,position)
+	return object
 end
 
 local function sort_cb(obj1,obj2)

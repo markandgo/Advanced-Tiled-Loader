@@ -45,7 +45,7 @@ function Object:init(layer,x,y,gid,args)
 	self.rotation  = a.rotation or 0 -- in degrees
 	self.properties= a.properties or {}
 	self.flipbits  = a.flipbits or 0
-	self.draw_bbox = false
+	self.draw_bbox = a.draw_bbox or false
 	
 	-- INIT:
 	
