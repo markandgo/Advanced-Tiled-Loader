@@ -1,7 +1,7 @@
 Tidal
 ========
 
-Tidal loads and renders [Tiled](http://www.mapeditor.org/). 
+Tidal loads and renders [Tiled](http://www.mapeditor.org/) maps. 
 Requires [LÖVE](http://love2d.org)
 
 Currently compatible with Tiled **0.10.0**
@@ -15,6 +15,9 @@ Supports every known feature except for the following:
 
 Stable release:
 [v0.10.0](https://github.com/markandgo/Tidal/releases/tag/v0.10.0)
+
+Please check out the [wiki](https://github.com/markandgo/Tidal/wiki) 
+for help.
 
 Example: 
 
