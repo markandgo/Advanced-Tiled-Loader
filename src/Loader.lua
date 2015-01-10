@@ -257,15 +257,15 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 		end
 	end
 	
-	local t             = tmxtileset
-	local args          = {name = t.name,spacing = t.spacing,margin = t.margin}
-	local tmxtiles      = {}
-	local tileproperties= {}
-	local tileimages    = {}
-	local tileterrains  = {}
-	local terraintypes  = {}
-	local animations    = {}
-	local objectgroups  = {}
+	local t                 = tmxtileset
+	local args              = {name= t.name,spacing= t.spacing,margin= t.margin}
+	local tmx_tiles         = {}
+	local tmx_tileproperties= {}
+	local tileimages        = {}
+	local tmx_tileterrains  = {}
+	local tmx_terraintypes  = {}
+	local tmx_animations    = {}
+	local tmx_objectgroups  = {}
 	
 	for i,element in ipairs(tmxtileset) do
 		local etype = element[elementkey]
@@ -286,26 +286,26 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 			args.imagesource= element.source
 			args.trans      = element.trans
 		elseif etype == 'terraintypes' then
-			terraintypes = element
+			tmx_terraintypes = element
 		elseif etype == 'tile' then
-			tmxtiles[element.id] = element
+			tmx_tiles[element.id] = element
 			
 			for i,v in ipairs(element) do
 				if v[elementkey] == 'properties' then
-					tileproperties[element.id] = Loader._expandProperties(v)
+					tmx_tileproperties[element.id] = Loader._expandProperties(v)
 				elseif v[elementkey] == 'image' then
 					Loader._expandImage(v,tmxmap)
 					tileimages[element.id] = v.image
 				elseif v[elementkey] == 'animation' then
-					animations[element.id] = v
+					tmx_animations[element.id] = v
 				elseif v[elementkey] == 'objectgroup' then
-					objectgroups[element.id] = v
+					tmx_objectgroups[element.id] = v
 				end
 			end
 			if element.terrain then
 				local a,b,c,d = element.terrain:match '(.*),(.*),(.*),(.*)'
 				a,b,c,d       = a and tonumber(a),b and tonumber(b),c and tonumber(c),d and tonumber(d)
-				tileterrains[element.id] = {a,b,c,d}
+				tmx_tileterrains[element.id] = {a,b,c,d}
 			end
 		elseif etype == 'properties' then
 			args.properties = Loader._expandProperties(element)
@@ -315,32 +315,27 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 	local tileset = TileSet:new(
 		t.tilewidth,
 		t.tileheight,
-		args.image,
+		args.image or tileimages,
 		t.firstgid,
 		args)
 	
 	-- Import terrain types
-	for i,terrain in ipairs(terraintypes) do
+	for i,tmx_terrain in ipairs(tmx_terraintypes) do
 		local properties
-		for i,v in ipairs(terrain) do
+		for i,v in ipairs(tmx_terrain) do
 			if v[elementkey] == 'properties' then
 				properties = Loader._expandProperties(v)
 			end
 		end
-		tileset:newTerrain(terrain.name,terrain.tile,properties)
+		tileset:newTerrain(tmx_terrain.name,tmx_terrain.tile,properties)
 	end
 		
 	local tiles = tileset.tiles
-	for id,tmxtile in pairs(tmxtiles) do
-		-- Have to manually create tile for tileset with image collection
-		if not args.image then
-			tiles[id] = Tile(tileset,id,tileimages[id])
-		end
-		tiles[id].properties= tileproperties[id]
-		tiles[id].image     = tileimages[id]
-		tiles[id].terrain   = tileterrains[id]
+	for id,tmxtile in pairs(tmx_tiles) do
+		tiles[id].properties= tmx_tileproperties[id]
+		tiles[id].terrain   = tmx_tileterrains[id]
 		
-		local tmxanimation = animations[id]
+		local tmxanimation = tmx_animations[id]
 		if tmxanimation then
 			tiles[id].animated = true
 			tiles[id].current_frame = 1
@@ -363,9 +358,9 @@ function Loader._expandTileSet(tmxtileset,tmxmap)
 			end
 		end
 		
-		for id,objectgroup in pairs(objectgroups) do
+		for id,tmx_objectgroup in pairs(tmx_objectgroups) do
 			tiles[id].objects = {}
-			for _,tmxobject in ipairs(objectgroup) do
+			for _,tmxobject in ipairs(tmx_objectgroup) do
 				table.insert(tiles[id].objects,Loader._expandObject(tmxobject))
 			end
 		end

@@ -38,11 +38,11 @@ function Map:init(width,height,tilewidth,tileheight,args)
 	self.tiles      = a.tiles or {} -- indexed by gid
 	self.properties = a.properties or {}
 	self._drawrange = nil -- {x,y,x2,y2} no drawrange means draw everything
-	self.batch_draw = true -- Disable for image collection / tile animation
+	self.batch_draw = a.batch_draw == nil and true or a.batch_draw -- Disable for image collection / tile animation
 end
 
-function Map:newTileSet(tilewidth,tileheight,image,firstgid,args)
-	local tileset= TileSet:new(tilewidth,tileheight,image,firstgid,args)
+function Map:newTileSet(tilewidth,tileheight,imageOrTable,firstgid,args)
+	local tileset= TileSet:new(tilewidth,tileheight,imageOrTable,firstgid,args)
 	local name   = tileset.name
 	if self.tilesets[name] then 
 	  error(  string.format("A tileset named \"%s\" already exists.",name) )
@@ -94,7 +94,10 @@ function Map:newImageLayer(image, args, position)
 end
 
 function Map:newCustomLayer(name, position, layer)
-	layer = layer or {name = name, class = 'CustomLayer', map = self}
+	layer      = layer or {}
+	layer.name = name or 'Unnamed Layer'
+	layer.map  = self
+	layer.class= 'CustomLayer'
 	if self.layers[name] then 
       error( string.format(ERROR_LAYER_NAME,name) )
    end
@@ -102,6 +105,27 @@ function Map:newCustomLayer(name, position, layer)
    table.insert(self.layerOrder, position or #self.layerOrder + 1, layer) 
 	
    return layer
+end
+
+function Map:removeLayer(nameOrIndex)
+	local layer
+	if type(nameOrIndex) == 'string' then
+		layer = self.layers[nameOrIndex]
+		self.layers[nameOrIndex] = nil
+		
+		for i,a_layer in ipairs(self.layerOrder) do
+			if a_layer == layer then
+				table.remove(self.layerOrder,i)
+				break
+			end
+		end
+	elseif type(nameOrIndex) == 'number' then
+		layer = table.remove(self.layerOrder,nameOrIndex)
+		self.layers[layer.name] = nil
+	else
+		error 'Invalid argument. Must be a number or string'
+	end
+	return layer
 end
 
 -- The unit length of a tile on both axes is 1. 
@@ -154,14 +178,6 @@ function Map:setDrawRange(x,y,x2,y2)
 		
 		local dx,dy,dx2,dy2    = dr[1],dr[2],dr[3],dr[4]
 		dr[1],dr[2],dr[3],dr[4]= x,y,x2,y2
-		
-		-- skip redraw if draw boxes don't share the same cells
-		if floor(dx/tw)  == floor(x/tw)  and floor(dy/th)  == floor(y/th) and  
-			floor(dx2/tw) == floor(x2/tw) and floor(dy2/th) == floor(y2/th)
-			then
-			return
-		end
-		
 	end
 	for i,layer in ipairs(self.layerOrder) do
 		layer._redraw = true

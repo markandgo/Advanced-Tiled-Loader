@@ -43,7 +43,6 @@ function TileLayer:clear()
 	self.cells    = {}
 	self._gridflip= {}
 	self._batches = {}
-	self._batchid = {}
 end
 
 -- passing nil clears a tile
@@ -258,6 +257,10 @@ function TileLayer:draw(x,y)
 				-self.ox-tileset.offsetX, -self.oy-tileset.offsetY)
 		end
 	else
+		if next(self._batches) then
+			self._batches = {}
+		end
+	
 		love.graphics.push()
 		love.graphics.translate(x+self.ox,y+self.oy)
 		
