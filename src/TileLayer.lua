@@ -104,45 +104,45 @@ function TileLayer:resetTileOrientation(tx,ty)
 end
 
 function TileLayer:_getTileIterator()
-	local tw,th = map.tilewidth,map.tileheight
+	local tw,th = self.map.tilewidth, self.map.tileheight
 	local tile_iterator
 	
-	if map._drawrange then
-		local vx,vy,vx2,vy2 = unpack(map._drawrange)
+	if self.map._drawrange then
+		local vx,vy,vx2,vy2 = unpack(self.map._drawrange)
 		-- apply drawing offsets
 		vx,vy  = vx - self.ox, vy - self.oy
 		vx2,vy2= vx2 - self.ox, vy2 - self.oy
 		
-		if map.orientation == 'orthogonal' then
+		if self.map.orientation == 'orthogonal' then
 			local gx,gy,gx2,gy2 = floor( vx / tw ), floor( vy / th ),
 				floor( vx2 / tw ), floor( vy2 / th )
 			
 			gx,gy,gx2,gy2 = 
 				max(0,gx),
 				max(0,gy),
-				min(gx2,map.width),
-				min(gy2,map.height)
+				min(gx2, self.map.width),
+				min(gy2, self.map.height)
 			
 			tile_iterator = self:rectangle(gx,gy,gx2,gy2, true)
 		
-		elseif map.orientation == 'isometric' then
+		elseif self.map.orientation == 'isometric' then
 			
 			tile_iterator = self:isoRectangle(vx,vy, vx2,vy2)
 			
-		elseif map.orientation == 'staggered' then
+		elseif self.map.orientation == 'staggered' then
 			local gx,gy,gx2,gy2 = floor( vx / tw ), floor( vy / th ) * 2,
 				floor( vx2 / tw ), floor( vy2 / th ) * 2
 			
 			gx,gy,gx2,gy2 = 
 				max(0,gx),
 				max(0,gy),
-				min(gx2,map.width),
-				min(gy2,map.height)
+				min(gx2, self.map.width),
+				min(gy2, self.map.height)
 			
 			tile_iterator = self:rectangle(gx,gy, gx2,gy2, true)
 		end
 	else
-		tile_iterator = self:rectangle(0,0,map.width-1,map.height-1,true)
+		tile_iterator = self:rectangle(0,0, self.map.width-1, self.map.height-1, true)
 	end
 	
 	return tile_iterator
@@ -179,26 +179,26 @@ function TileLayer:_getDrawParameters(tx,ty,tile)
 		dx,dy = dy,dx
 		
 		-- extra offset to align to bottom like Tiled
-		dy    = dy - (qw - map.tileheight)
+		dy    = dy - (qw - self.map.tileheight)
 	else
-		dy    = dy - (qh - map.tileheight)
+		dy    = dy - (qh - self.map.tileheight)
 	end
 	
-	if map.orientation == 'orthogonal' then
+	if self.map.orientation == 'orthogonal' then
 
-		x,y   = tx * map.tilewidth,
-				  ty * map.tileheight
+		x,y   = tx * self.map.tilewidth,
+				  ty * self.map.tileheight
 		
-	elseif map.orientation == 'isometric' then
-		x,y = map:fromIso(tx,ty)
+	elseif self.map.orientation == 'isometric' then
+		x,y = self.map:fromIso(tx,ty)
 		
 		-- apex of tile (0,0) is point (0,0)
-		x   = x - (map.tilewidth/2)
-	elseif map.orientation == 'staggered' then
+		x   = x - (self.map.tilewidth/2)
+	elseif self.map.orientation == 'staggered' then
 		local offset  = ty % 2
-		local xoffset = (offset*0.5*map.tilewidth)
-		x             = tx * map.tilewidth + xoffset
-		y             = ty * map.tileheight*0.5
+		local xoffset = (offset*0.5*self.map.tilewidth)
+		x             = tx * self.map.tilewidth + xoffset
+		y             = ty * self.map.tileheight*0.5
 	end
 	
 	return x,y, dx,dy, angle, sx,sy, ox,oy
