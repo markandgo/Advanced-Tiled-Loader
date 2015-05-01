@@ -14,7 +14,7 @@ Supports every known feature except for the following:
 * Specifying draw order
 
 Stable release:
-[v0.10.1](https://github.com/markandgo/Tidal/releases/tag/v0.10.1)
+[v0.10.2](https://github.com/markandgo/Tidal/releases/tag/v0.10.2)
 
 Please check out the [wiki](https://github.com/markandgo/Tidal/wiki) 
 for help.

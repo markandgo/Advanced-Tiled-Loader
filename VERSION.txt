@@ -2,6 +2,9 @@ Tidal Changelog
 --------------------------------------------------------------------------------------
 
 CHANGES:
+0.10.2 (2015/04/30)
+- Fixed bug in TileLayer when referencing a map object
+
 0.10.1 (2015/01/010)
 - Added ObjectLayer:removeObject
 - Added ObjectLayer:newObject
