@@ -19,6 +19,8 @@ Stable release:
 Please check out the [wiki](https://github.com/markandgo/Tidal/wiki) 
 for help.
 
+![Alt text](/screenshot.png?raw=true)
+
 Example: 
 
 ````lua
